@@ -36,7 +36,8 @@ export function SettingsPanel() {
   };
 
   return (
-    <div className="w-full h-full flex flex-col p-4 gap-4 overflow-hidden">
+    <div className="w-full h-full flex flex-col overflow-hidden"
+      style={{ paddingInline: "var(--widget-pad-x)", paddingBlock: "var(--widget-pad-y)", gap: "var(--card-gap)" }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Settings size={14} className="text-white/50" />
@@ -59,14 +60,13 @@ export function SettingsPanel() {
               <button
                 key={proto.id}
                 onClick={() => handleProtocolChange(proto.id)}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all text-left"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all text-left"
                 style={{
                   background:
-                    protocol === proto.id ? "rgba(168,85,247,0.15)" : "rgba(255,255,255,0.04)",
-                  border:
-                    protocol === proto.id
-                      ? "1px solid rgba(168,85,247,0.4)"
-                      : "1px solid rgba(255,255,255,0.06)",
+                    protocol === proto.id ? "var(--sel-bg)" : "rgba(255,255,255,0.04)",
+                  borderRadius: "var(--card-radius)",
+                  paddingInline: "var(--card-pad-x)",
+                  paddingBlock: "var(--card-pad-y)",
                 }}
               >
                 <div className="flex flex-col">
@@ -74,7 +74,7 @@ export function SettingsPanel() {
                   <span className="text-[9px] text-white/40">{proto.description}</span>
                 </div>
                 {protocol === proto.id && (
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#a855f7" }} />
+                  <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "var(--sel-dot)", boxShadow: "0 0 6px var(--sel-dot)" }} />
                 )}
               </button>
             ))}
@@ -127,7 +127,8 @@ export function SettingsPanel() {
               Reset All Data
             </button>
           ) : (
-            <div className="flex flex-col gap-2 rounded-lg p-3" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}>
+            <div className="flex flex-col gap-2"
+              style={{ background: "rgba(239,68,68,0.10)", borderRadius: "var(--card-radius)", paddingInline: "var(--card-pad-x)", paddingBlock: "var(--card-pad-y)" }}>
               <span className="text-xs text-red-400 font-bold">This will delete ALL data.</span>
               <div className="flex gap-2">
                 <button

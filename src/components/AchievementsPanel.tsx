@@ -10,7 +10,8 @@ export function AchievementsPanel() {
   const unlockedSet = new Set(unlockedAchievements.map((a) => a.id));
 
   return (
-    <div className="w-full h-full flex flex-col p-4 gap-3 overflow-hidden">
+    <div className="w-full h-full flex flex-col overflow-hidden"
+      style={{ paddingInline: "var(--widget-pad-x)", paddingBlock: "var(--widget-pad-y)", gap: "var(--card-gap)" }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Award size={14} className="text-white/50" />
@@ -31,7 +32,7 @@ export function AchievementsPanel() {
 
       <div
         className="flex-1 overflow-y-auto scrollbar-hide"
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", alignContent: "start" }}
+        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--card-gap-sm)", alignContent: "start" }}
       >
         {ACHIEVEMENTS.map((ach) => {
           const unlocked = unlockedAchievements.find((a) => a.id === ach.id);
@@ -40,13 +41,13 @@ export function AchievementsPanel() {
           return (
             <motion.div
               key={ach.id}
-              className="relative rounded-xl p-3 flex flex-col gap-1.5 transition-all"
+              className="relative flex flex-col gap-1.5 transition-all"
               style={{
-                background: isUnlocked ? "rgba(168,85,247,0.1)" : "rgba(255,255,255,0.03)",
-                border: isUnlocked
-                  ? "1px solid rgba(168,85,247,0.3)"
-                  : "1px solid rgba(255,255,255,0.05)",
-                opacity: isUnlocked ? 1 : 0.5,
+                background: isUnlocked ? "rgba(168,85,247,0.14)" : "rgba(255,255,255,0.04)",
+                borderRadius: "var(--card-radius)",
+                paddingInline: "var(--card-pad-x-sm)",
+                paddingBlock: "var(--card-pad-y-sm)",
+                opacity: isUnlocked ? 1 : 0.55,
               }}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: isUnlocked ? 1 : 0.5, scale: 1 }}

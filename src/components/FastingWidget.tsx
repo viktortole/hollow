@@ -90,7 +90,14 @@ export function FastingWidget() {
   }, [hoursElapsed, targetHours, endFast]);
 
   return (
-    <div className="w-full h-full flex flex-col p-4 gap-3 relative overflow-hidden">
+    <div
+      className="w-full h-full flex flex-col relative overflow-hidden"
+      style={{
+        paddingInline: "var(--widget-pad-x)",
+        paddingBlock: "var(--widget-pad-y)",
+        gap: "var(--card-gap)",
+      }}
+    >
       <ToastContainer />
 
       <div
@@ -135,17 +142,19 @@ export function FastingWidget() {
 
         <div
           className="rounded-full px-3 py-1 text-[10px] font-bold text-white/82"
-          style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}
+          style={{ background: "rgba(255,255,255,0.07)" }}
         >
           {protocol.name}
         </div>
       </div>
 
       <div
-        className="relative flex flex-col items-center rounded-2xl px-4 py-4"
+        className="relative flex flex-col items-center"
         style={{
           background: "linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03))",
-          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "var(--card-radius)",
+          paddingInline: "var(--card-pad-x)",
+          paddingBlock: "var(--card-pad-y)",
           boxShadow: "0 18px 44px rgba(0,0,0,0.24)",
         }}
       >
@@ -186,15 +195,24 @@ export function FastingWidget() {
 
       {isFasting ? (
         <div
-          className="rounded-xl px-3 py-2"
-          style={{ background: "rgba(255,255,255,0.045)", border: "1px solid rgba(255,255,255,0.08)" }}
+          style={{
+            background: "var(--card-bg-neutral)",
+            borderRadius: "var(--card-radius)",
+            paddingInline: "var(--card-pad-x)",
+            paddingBlock: "var(--card-pad-y)",
+          }}
         >
           <StageIndicator stage={currentStage} hoursElapsed={hoursElapsed} />
         </div>
       ) : (
         <div
-          className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl px-3 py-2"
-          style={{ background: "rgba(255,255,255,0.045)", border: "1px solid rgba(255,255,255,0.08)" }}
+          className="grid grid-cols-[1fr_auto] items-center gap-3"
+          style={{
+            background: "var(--card-bg-neutral)",
+            borderRadius: "var(--card-radius)",
+            paddingInline: "var(--card-pad-x)",
+            paddingBlock: "var(--card-pad-y)",
+          }}
         >
           <div className="flex flex-col gap-0.5">
             <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/62">First Milestone</span>
@@ -207,17 +225,38 @@ export function FastingWidget() {
       )}
 
       <div className="grid grid-cols-3 gap-2" aria-label="Fasting stats">
-        <div className="rounded-xl p-2.5" style={{ background: "rgba(168,85,247,0.12)", border: "1px solid rgba(168,85,247,0.22)" }}>
+        <div
+          style={{
+            background: "rgba(168,85,247,0.16)",
+            borderRadius: "var(--card-radius)",
+            paddingInline: "var(--card-pad-x)",
+            paddingBlock: "var(--card-pad-y)",
+          }}
+        >
           <Trophy size={13} className="mb-1 text-purple-300" />
           <div className="text-[9px] uppercase tracking-[0.14em] text-white/45">Level</div>
           <div className="text-sm font-bold text-white">{level}</div>
         </div>
-        <div className="rounded-xl p-2.5" style={{ background: "rgba(236,72,153,0.1)", border: "1px solid rgba(236,72,153,0.2)" }}>
+        <div
+          style={{
+            background: "rgba(236,72,153,0.14)",
+            borderRadius: "var(--card-radius)",
+            paddingInline: "var(--card-pad-x)",
+            paddingBlock: "var(--card-pad-y)",
+          }}
+        >
           <Target size={13} className="mb-1 text-pink-300" />
           <div className="text-[9px] uppercase tracking-[0.14em] text-white/45">Next XP</div>
           <div className="text-sm font-bold text-white">{xp.required - xp.current}</div>
         </div>
-        <div className="rounded-xl p-2.5" style={{ background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)" }}>
+        <div
+          style={{
+            background: "rgba(249,115,22,0.14)",
+            borderRadius: "var(--card-radius)",
+            paddingInline: "var(--card-pad-x)",
+            paddingBlock: "var(--card-pad-y)",
+          }}
+        >
           <Flame size={13} className="mb-1 text-orange-300" />
           <div className="text-[9px] uppercase tracking-[0.14em] text-white/45">Streak</div>
           <div className="text-sm font-bold text-white">{currentStreak}d</div>
@@ -248,8 +287,7 @@ export function FastingWidget() {
               onClick={() => handleEndFast(false)}
               className="flex-1 cursor-pointer py-3 rounded-xl font-bold text-xs tracking-widest uppercase flex items-center justify-center gap-2 transition-all hover:brightness-110 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-red-300/50"
               style={{
-                background: "rgba(239,68,68,0.2)",
-                border: "1px solid rgba(239,68,68,0.3)",
+                background: "rgba(239,68,68,0.28)",
                 color: "#f87171",
                 letterSpacing: "0.1em",
               }}

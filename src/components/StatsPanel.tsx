@@ -25,7 +25,8 @@ export function StatsPanel() {
   const maxBarHeight = 40;
 
   return (
-    <div className="w-full h-full flex flex-col p-4 gap-4 overflow-hidden">
+    <div className="w-full h-full flex flex-col overflow-hidden"
+      style={{ paddingInline: "var(--widget-pad-x)", paddingBlock: "var(--widget-pad-y)", gap: "var(--card-gap)" }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BarChart2 size={14} className="text-white/50" />
@@ -48,8 +49,13 @@ export function StatsPanel() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-lg p-3 flex flex-col gap-1"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+            className="flex flex-col gap-1"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              borderRadius: "var(--card-radius)",
+              paddingInline: "var(--card-pad-x)",
+              paddingBlock: "var(--card-pad-y)",
+            }}
           >
             <span className="text-[9px] text-white/40 uppercase tracking-wider">{stat.label}</span>
             <span className="text-lg font-bold text-white font-mono">{stat.value}</span>
@@ -65,10 +71,10 @@ export function StatsPanel() {
 
         <div className="flex items-center gap-3">
           <div
-            className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg"
+            className="w-10 h-10 flex items-center justify-center font-bold text-lg"
             style={{
-              background: "rgba(168,85,247,0.2)",
-              border: "1px solid rgba(168,85,247,0.4)",
+              background: "rgba(168,85,247,0.18)",
+              borderRadius: "var(--card-radius)",
               color: "#a855f7",
             }}
           >

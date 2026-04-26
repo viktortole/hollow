@@ -21,7 +21,8 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   };
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center p-6 gap-6">
+    <div className="w-full h-full flex flex-col items-center justify-center overflow-hidden"
+      style={{ paddingInline: "var(--widget-pad-x)", paddingBlock: "var(--widget-pad-y)", gap: "var(--card-gap)" }}>
       <AnimatePresence mode="wait">
         {step === 0 ? (
           <motion.div
@@ -88,16 +89,15 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                 type="button"
                 key={proto.id}
                 onClick={() => setSelectedProtocol(proto.id)}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all"
                 style={{
                   background:
                     selectedProtocol === proto.id
-                      ? "rgba(168,85,247,0.2)"
-                      : "rgba(255,255,255,0.05)",
-                  border:
-                    selectedProtocol === proto.id
-                      ? "1px solid rgba(168,85,247,0.5)"
-                      : "1px solid rgba(255,255,255,0.08)",
+                      ? "var(--sel-bg)"
+                      : "rgba(255,255,255,0.04)",
+                  borderRadius: "var(--card-radius)",
+                  paddingInline: "var(--card-pad-x)",
+                  paddingBlock: "var(--card-pad-y)",
                 }}
               >
                 <div className="flex flex-col items-start gap-0.5">
@@ -106,8 +106,8 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                 </div>
                 {selectedProtocol === proto.id && (
                   <div
-                    className="w-2 h-2 rounded-full"
-                    style={{ background: "#a855f7", boxShadow: "0 0 8px #a855f7" }}
+                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ background: "var(--sel-dot)", boxShadow: "0 0 8px var(--sel-dot)" }}
                   />
                 )}
               </button>

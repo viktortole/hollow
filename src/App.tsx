@@ -200,7 +200,7 @@ export default function App() {
       style={{
         background: "linear-gradient(180deg, rgba(13,12,24,0.98), rgba(8,8,16,0.98))",
         border: "1px solid rgba(255,255,255,0.12)",
-        boxShadow: "0 18px 54px rgba(0,0,0,0.68), 0 0 0 1px rgba(255,255,255,0.045) inset",
+        boxShadow: "0 18px 54px rgba(0,0,0,0.68)",
       }}
       onContextMenu={handleContextMenu}
     >
