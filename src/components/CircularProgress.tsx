@@ -22,7 +22,14 @@ export interface RingMark {
 }
 
 interface CircularProgressProps {
-  progress: number; // 0-100
+  /** 0..100 — primary arc from 12 o'clock clockwise. Values >100 are clamped
+      to 100 for the primary arc; pass `overtimeProgress` for the >100% case. */
+  progress: number;
+  /** 0..100 — second arc drawn on top in `overtimeColor` once the primary
+      arc has filled. Use this for "past goal" visualization. */
+  overtimeProgress?: number;
+  /** Color of the secondary overtime arc. Defaults to gold. */
+  overtimeColor?: string;
   size?: number;
   strokeWidth?: number;
   color?: string;
@@ -34,14 +41,22 @@ interface CircularProgressProps {
 }
 
 /**
- * Circular progress ring with optional perimeter tick-marks.
+ * Circular progress ring with optional perimeter tick-marks + optional
+ * second-pass "overtime" arc.
  *
- * Tick marks are short radial segments crossing the track, giving the ring
- * a metabolic-journey scale. The leading edge (active stage) carries a small
- * pulsing dot — the only "icon" on the ring itself.
+ * Stack order from back to front:
+ *   1. Track (full circle, ink-4)
+ *   2. Soft tip wash (blur halo at the leading edge of the primary arc)
+ *   3. Primary arc (stage color, blur-filtered glow)
+ *   4. Overtime arc (gold by default — visible only when goal exceeded)
+ *   5. Stage tick-marks crossing the track (drawn LAST so the arc + glow
+ *      can't mask them when at 100%)
+ *   6. Active stage's outside dot
  */
 export function CircularProgress({
   progress,
+  overtimeProgress = 0,
+  overtimeColor = "var(--gold)",
   size = 200,
   strokeWidth = 8,
   color = "#b85a3b",
@@ -51,7 +66,10 @@ export function CircularProgress({
 }: CircularProgressProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (Math.min(progress, 100) / 100) * circumference;
+  const primaryArc = Math.min(progress, 100);
+  const offset = circumference - (primaryArc / 100) * circumference;
+  const overtime = Math.min(overtimeProgress, 100);
+  const overtimeOffset = circumference - (overtime / 100) * circumference;
   const center = size / 2;
   const tickInner = radius - strokeWidth / 2 - 2;
   const tickOuter = radius + strokeWidth / 2 + 2;
@@ -90,7 +108,7 @@ export function CircularProgress({
           />
 
           {/* Soft tip wash beneath the arc — gives the leading edge a halo */}
-          {progress > 0 && progress < 100 && (
+          {primaryArc > 0 && primaryArc < 100 && (
             <motion.circle
               cx={center}
               cy={center}
@@ -107,7 +125,7 @@ export function CircularProgress({
             />
           )}
 
-          {/* Progress arc */}
+          {/* Primary progress arc */}
           <motion.circle
             cx={center}
             cy={center}
@@ -122,10 +140,32 @@ export function CircularProgress({
             transition={{ duration: 0.8, ease: "easeOut" }}
             filter={`url(#${filterId})`}
           />
+
+          {/* Overtime arc — drawn ON TOP in gold, only when goal exceeded.
+              Slightly thinner so the underlying primary arc still reads as the
+              full ring underneath, while the gold makes it clear we're in
+              "past your goal" territory. */}
+          {overtime > 0 && (
+            <motion.circle
+              cx={center}
+              cy={center}
+              r={radius}
+              fill="none"
+              stroke={overtimeColor}
+              strokeWidth={strokeWidth - 2}
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              initial={{ strokeDashoffset: circumference }}
+              animate={{ strokeDashoffset: overtimeOffset }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              opacity={0.95}
+            />
+          )}
         </g>
 
-        {/* Stage marks — short radial ticks crossing the track. Reached marks
-            inherit their stage color; the active one anchors a pulsing dot. */}
+        {/* Stage marks — short radial ticks crossing the track. Drawn AFTER
+            the rotated group so the 10px arc + glow filter can't bury them
+            when progress is at 100% (which the screenshot bug surfaced). */}
         {marks?.map((mark, i) => {
           const theta = mark.atProgress * Math.PI * 2 - Math.PI / 2;
           const cosT = Math.cos(theta);
@@ -137,16 +177,26 @@ export function CircularProgress({
           const dotX = center + dotRadius * cosT;
           const dotY = center + dotRadius * sinT;
 
-          // Bumped tick width and unreached opacity so the marks actually read
-          // around the ring (audit #6 — they were nearly invisible). Reached
-          // marks now use the stage color at full strength; unreached use ink
-          // at 60% alpha — strong enough to read against the track.
+          // Reached marks: stage color at full strength + thicker stroke so
+          // they read on top of the arc. Unreached: dim ink-3 against the track.
           const tickColor = mark.reached ? mark.color : "var(--ink-3)";
-          const tickOpacity = mark.reached ? 1 : 0.6;
-          const tickWidth = mark.reached ? 2.5 : 1.75;
+          const tickOpacity = mark.reached ? 1 : 0.7;
+          const tickWidth = mark.reached ? 3 : 2;
 
           return (
             <g key={`mark-${i}`} aria-label={mark.label}>
+              {/* Tiny background "punch" in track color so the tick reads as
+                  a clean notch even when sitting on top of the arc. */}
+              <line
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                stroke="var(--bg-1)"
+                strokeWidth={tickWidth + 2.5}
+                strokeLinecap="butt"
+                opacity={0.92}
+              />
               <line
                 x1={x1}
                 y1={y1}
@@ -170,7 +220,7 @@ export function CircularProgress({
                   <motion.circle
                     cx={dotX}
                     cy={dotY}
-                    r={2.5}
+                    r={2.8}
                     fill={mark.color}
                     animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
                     transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}

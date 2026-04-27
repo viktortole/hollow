@@ -8,6 +8,8 @@ interface RingDisplayProps {
   isFasting: boolean;
   goalReached: boolean;
   progress: number;
+  /** Seconds past goal (0 if not yet at goal). Drives the gold overtime arc. */
+  overSeconds: number;
   elapsed: number;
   targetSeconds: number;
   targetHours: number;
@@ -36,6 +38,7 @@ export function RingDisplay({
   isFasting,
   goalReached,
   progress,
+  overSeconds,
   elapsed,
   targetSeconds,
   targetHours,
@@ -49,6 +52,13 @@ export function RingDisplay({
   // ring (it duplicated the protocol picker chip below). Kept in the interface
   // for back-compat with parent's prop drilling.
   void targetHours;
+
+  // Overtime ring — once past goal, draw a second arc on top in gold whose
+  // progress = (overSeconds / targetSeconds) % 1. Each lap of overtime equals
+  // one full goal duration. The user reported the ring being "stuck at 100%"
+  // post-goal — this fixes it visually without misrepresenting completion.
+  const overtimeFraction = targetSeconds > 0 ? (overSeconds / targetSeconds) : 0;
+  const overtimeProgress = (overtimeFraction % 1) * 100;
 
   return (
     <div className="relative flex flex-col items-center justify-center py-1">
@@ -85,6 +95,8 @@ export function RingDisplay({
       <div className="relative">
         <CircularProgress
           progress={progress}
+          overtimeProgress={overSeconds > 0 ? overtimeProgress : 0}
+          overtimeColor="var(--gold)"
           size={172}
           strokeWidth={10}
           color={stageColor}

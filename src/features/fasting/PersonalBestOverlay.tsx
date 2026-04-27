@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react";
 
 interface PersonalBestOverlayProps {
   /** Whether the celebration is currently visible. Driven by `usePersonalBest`. */
@@ -7,13 +8,17 @@ interface PersonalBestOverlayProps {
   elapsedSeconds: number;
   /** The previous longest-fast duration in seconds. */
   longestFastSeconds: number;
+  /** Optional manual dismissal — when provided, a close button is rendered.
+      Supplements the auto-dismiss timer in usePersonalBest. */
+  onDismiss?: () => void;
 }
 
 /**
  * Personal-best celebration. Floats over the ring for ~5s when the current
- * fast crosses the user's previous longest. Read-only / non-interactive — the
- * pointer-events-none on the wrapper guarantees it can't intercept clicks on
- * the timer or controls below.
+ * fast crosses the user's previous longest, OR until the user dismisses it
+ * via the close button. The wrapper is `pointer-events-none` so clicks pass
+ * through to the timer below; the inner card re-enables pointer events so
+ * the close button is tappable.
  *
  * Driven entirely by `usePersonalBest` upstream; this component is dumb-render.
  */
@@ -21,7 +26,9 @@ export function PersonalBestOverlay({
   visible,
   elapsedSeconds,
   longestFastSeconds,
+  onDismiss,
 }: PersonalBestOverlayProps) {
+  const overByMinutes = Math.max(0, Math.floor((elapsedSeconds - longestFastSeconds) / 60));
   return (
     <AnimatePresence>
       {visible && (
@@ -35,7 +42,7 @@ export function PersonalBestOverlay({
           transition={{ type: "spring", stiffness: 300, damping: 24 }}
         >
           <div
-            className="flex items-center gap-2.5 px-3 py-2"
+            className="flex items-center gap-2.5 px-3 py-2 pointer-events-auto"
             style={{
               background: "var(--bg-2)",
               borderRadius: "var(--card-radius)",
@@ -51,7 +58,7 @@ export function PersonalBestOverlay({
             >
               <span style={{ fontSize: "16px", fontWeight: 700 }}>★</span>
             </div>
-            <div className="flex flex-col min-w-0 leading-tight">
+            <div className="flex flex-col min-w-0 leading-tight flex-1">
               <span
                 className="label-cap text-[8px]"
                 style={{ color: "var(--gold)", letterSpacing: "0.20em", fontWeight: 700 }}
@@ -62,9 +69,25 @@ export function PersonalBestOverlay({
                 Longest fast you've ever done
               </span>
               <span className="text-[9.5px]" style={{ color: "var(--ink-3)" }}>
-                Past +{((elapsedSeconds - longestFastSeconds) / 60).toFixed(0)}m beyond your previous record
+                {overByMinutes > 0
+                  ? `${overByMinutes}m past your previous record`
+                  : "Past your previous record"}
               </span>
             </div>
+            {onDismiss && (
+              <button
+                type="button"
+                onClick={onDismiss}
+                className="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center cursor-pointer transition-colors focus:outline-none"
+                style={{ color: "var(--ink-3)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--ink)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--ink-3)")}
+                aria-label="Dismiss"
+                title="Dismiss"
+              >
+                <X size={12} />
+              </button>
+            )}
           </div>
         </motion.div>
       )}

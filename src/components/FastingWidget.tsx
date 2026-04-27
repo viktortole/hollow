@@ -76,8 +76,17 @@ export function FastingWidget() {
   const progress = isFasting ? Math.min(100, (elapsed / targetSeconds) * 100) : 0;
   const goalReached = isFasting && elapsed >= targetSeconds;
 
-  const { justBroken: showPersonalBest, longestSeconds: longestFastSeconds } =
+  const { justBroken, longestSeconds: longestFastSeconds } =
     usePersonalBest({ elapsed, isFasting });
+
+  // Manual dismissal supplements the auto-clear in usePersonalBest. The user
+  // reported the overlay being un-dismissable, so we layer a local "user closed
+  // it" state on top. Resets when fast ends (firedRef in the hook covers reuse).
+  const [pbDismissed, setPbDismissed] = useState(false);
+  useEffect(() => {
+    if (!isFasting) setPbDismissed(false);
+  }, [isFasting]);
+  const showPersonalBest = justBroken && !pbDismissed;
 
   const currentStage = getStageForHours(hoursElapsed);
   const stageColor = isFasting ? currentStage.color : "#b85a3b"; // ember accent in idle
@@ -196,6 +205,7 @@ export function FastingWidget() {
         visible={showPersonalBest}
         elapsedSeconds={elapsed}
         longestFastSeconds={longestFastSeconds}
+        onDismiss={() => setPbDismissed(true)}
       />
 
       {/* HEADER — status pill + protocol stamp. Both shrink-safe at min width. */}
@@ -213,6 +223,7 @@ export function FastingWidget() {
         isFasting={isFasting}
         goalReached={goalReached && !extendedMode}
         progress={progress}
+        overSeconds={overSeconds}
         elapsed={elapsed}
         targetSeconds={targetSeconds}
         targetHours={targetHours}
