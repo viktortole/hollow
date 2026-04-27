@@ -110,23 +110,34 @@ export function FastingWidget() {
   );
   const eatingHours = Math.max(0, 24 - targetHours);
 
-  // STAGE MARKS — orbital icons positioned at hour-thresholds around the ring perimeter.
-  // Display range capped so 48h marks land just shy of 12 o'clock instead of wrapping onto 0h.
+  // STAGE MARKS — milestone circles positioned at hour-thresholds around the ring.
+  // Drops Fed (hoursMin=0) because it would sit on top of the 12-o'clock end-of-ring
+  // position and overlap with Stem Cell at 48h (the user-spotted bug). Fed is the
+  // IMPLICIT starting state — every fast begins fed; no need for a mark.
+  // Drops Stem Cell from short-protocol rings to avoid clustering with other late
+  // stages near 12 o'clock; reappears once user is past 24h.
   const displayMaxHours = Math.max(targetHours, 50);
   const currentStageIdx = isFasting ? getStageIndex(hoursElapsed) : -1;
   const ringMarks: RingMark[] = useMemo(
     () =>
-      STAGES.map((s, i) => {
-        const Icon = STAGE_ICONS[s.id];
-        return {
-          atProgress: Math.min(0.97, s.hoursMin / displayMaxHours),
-          reached: isFasting && hoursElapsed >= s.hoursMin,
-          isActive: i === currentStageIdx,
-          color: s.color,
-          icon: Icon ? <Icon size={12} /> : null,
-          label: `${s.name} at ${s.hoursMin}h`,
-        };
-      }),
+      STAGES
+        .map((s, i) => ({ s, i }))
+        .filter(({ s }) => {
+          if (s.id === "fed") return false; // implicit starting state
+          if (s.id === "stem_cell" && hoursElapsed < 24) return false; // declutter on short protocols
+          return true;
+        })
+        .map(({ s, i }) => {
+          const Icon = STAGE_ICONS[s.id];
+          return {
+            atProgress: Math.min(0.96, s.hoursMin / displayMaxHours),
+            reached: isFasting && hoursElapsed >= s.hoursMin,
+            isActive: i === currentStageIdx,
+            color: s.color,
+            icon: Icon ? <Icon size={12} /> : null,
+            label: `${s.name} at ${s.hoursMin}h`,
+          };
+        }),
     [hoursElapsed, isFasting, currentStageIdx, displayMaxHours]
   );
 

@@ -63,7 +63,7 @@ export function TimestampsRow({ startTimeLabel, endTimeLabel, goalReached }: Tim
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="flex items-center gap-1.5 r-chip px-1 py-0.5 hover:bg-soft focus:outline-none focus:ring-1 focus-ring-ink transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 r-chip px-1.5 py-0.5 hover:bg-soft focus:outline-none focus:ring-1 focus-ring-ink transition-colors cursor-pointer"
           aria-label="Adjust fast start time"
           aria-expanded={open}
         >
@@ -72,11 +72,14 @@ export function TimestampsRow({ startTimeLabel, endTimeLabel, goalReached }: Tim
             Started{" "}
             <span style={{ color: "var(--ink)" }}>{startTimeLabel}</span>
           </span>
-          <Pencil size={9} style={{ color: open ? "var(--ink)" : "var(--ink-3)" }} />
+          <Pencil size={9} style={{ color: open ? "var(--ink)" : "var(--ink-4)" }} />
         </button>
         <span style={{ color: "var(--ink-4)" }}>→</span>
+        {/* "Goal" not "Past goal" — when the user is past their goal it's the
+            timestamp of WHEN they hit it. "Past goal 12:24 PM" reads like the
+            user missed it (past tense). "Goal 12:24 PM" is just the milestone. */}
         <span>
-          {goalReached ? "Past goal" : "Ends"}{" "}
+          Goal{" "}
           <span style={{ color: "var(--ink)" }}>{endTimeLabel}</span>
         </span>
       </div>

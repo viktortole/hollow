@@ -108,9 +108,13 @@ export function RingDisplay({
               <Timer elapsed={elapsed} targetSeconds={targetSeconds} />
               <div
                 className="font-mono mt-0.5 tabular-nums"
-                style={{ fontSize: "9.5px", color: "var(--ink-3)" }}
+                style={{
+                  fontSize: "9.5px",
+                  color: goalReached ? "var(--gold)" : "var(--ink-3)",
+                  fontWeight: goalReached ? 600 : 400,
+                }}
               >
-                {Math.round(progress)}% complete
+                {goalReached ? "Goal reached" : `${Math.round(progress)}% complete`}
               </div>
             </div>
           ) : (
