@@ -1,0 +1,96 @@
+/**
+ * Hollow utility classes — small, single-purpose helpers used across components.
+ *
+ * If you need something not here, prefer adding a new utility over inline styles.
+ * See docs/DESIGN-SYSTEM.md for the type scale and primitives.
+ */
+
+/* ── TYPOGRAPHY UTILITIES ────────────────────────────── */
+
+/**
+ * Mono for ALL ticking numbers, codes, timestamps, table-like data.
+ * Used for the timer, XP totals, hour counts, hydration counts, timestamps.
+ */
+.font-mono {
+  font-family: "Geist Mono", "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+  font-feature-settings: "tnum", "zero", "ss02";
+}
+
+/**
+ * Small-cap label utility — uppercase, tracked, mono. The Hollow voice for section labels.
+ * Used: RANK, HYDRATION, READY, FASTING, FIRST MILESTONE, etc.
+ */
+.label-cap {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-weight: 500;
+  font-family: "Geist Mono", monospace;
+}
+
+/**
+ * Tighter version for chips — smaller letterspacing for in-flow elements.
+ * Used: PROTOCOL, OVER GOAL, COMPLETE.
+ */
+.label-tight {
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  font-weight: 600;
+  font-family: "Geist", sans-serif;
+}
+
+/* ── Z-INDEX UTILITIES ──────────────────────────────────
+ * Token-bound. NEVER write a literal z-[N] in a component;
+ * use one of these so the layering scale stays a single source of truth.
+ */
+.z-card        { z-index: var(--z-card); }
+.z-dragregion  { z-index: var(--z-dragregion); }
+.z-overlay     { z-index: var(--z-overlay); }
+.z-radial      { z-index: var(--z-radial); }
+.z-toast       { z-index: var(--z-toast); }
+.z-pb          { z-index: var(--z-pb); }
+.z-popover     { z-index: var(--z-popover); }
+.z-pillmode    { z-index: var(--z-pillmode); }
+.z-contextmenu { z-index: var(--z-contextmenu); }
+
+/* ── RADIUS UTILITIES — token-backed, ban Tailwind's `rounded-*` ── */
+
+.r-card { border-radius: var(--card-radius); }
+.r-pill { border-radius: var(--pill-radius); }
+.r-chip { border-radius: var(--chip-radius); }
+
+/* ── INK COLOR UTILITIES — theme-aware. Use these instead of `text-black/X` (which
+     hardcodes black and breaks in dark theme). ── */
+
+.text-ink   { color: var(--ink); }
+.text-ink-2 { color: var(--ink-2); }
+.text-ink-3 { color: var(--ink-3); }
+.text-ink-4 { color: var(--ink-4); }
+
+/* Theme-aware backgrounds — both static and hover. Match the cream/charcoal surface ramp. */
+.bg-soft       { background: var(--bg-3); }
+.hover-soft:hover    { background: var(--bg-3); }
+.hover-softer:hover  { background: var(--ink-4); }
+.hover-text-ink:hover { color: var(--ink); }
+.focus-ring-ink:focus { outline: none; box-shadow: 0 0 0 2px var(--ink-4); }
+
+/* Hairline divider — theme-aware. */
+.divider-h {
+  height: 1px;
+  background: var(--hairline);
+}
+
+/* Danger affordances — used by destructive buttons (End Fast, Reset Data). */
+.hover-danger-soft:hover {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+.focus-ring-danger:focus {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 40%, transparent);
+}
+
+/* ── SCROLLBAR HIDING ────────────────────────────────── */
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

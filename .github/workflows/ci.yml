@@ -1,0 +1,36 @@
+name: CI
+
+# Lightweight gate: typecheck + frontend build + architectural rule scans on
+# every push/PR. Runs the SAME `npm run health` command developers run locally,
+# so failures are reproducible verbatim — no "passes locally, fails in CI" drift.
+#
+# Native Tauri installer / APK builds belong in release.yml (tag-driven) — they
+# need OS-specific tooling (NSIS / Xcode / Android SDK) that doesn't belong on
+# every push.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  health:
+    name: Health check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Health check (typecheck + build + arch scans)
+        run: npm run health

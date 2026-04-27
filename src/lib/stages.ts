@@ -10,14 +10,16 @@ export interface FastingStage {
 }
 
 export const STAGES: FastingStage[] = [
+  // Earth-tone palette — desaturated, cohesive. No neon, no AI-purple.
+  // Each stage is recognizably distinct but reads as part of the same publication.
   {
     id: "fed",
     name: "Fed",
     description: "Digesting",
     hoursMin: 0,
     hoursMax: 4,
-    color: "#22c55e",
-    glowColor: "#22c55e80",
+    color: "#7a9b6e",          // sage
+    glowColor: "#7a9b6e80",
     xpMultiplier: 1,
   },
   {
@@ -26,8 +28,8 @@ export const STAGES: FastingStage[] = [
     description: "Glycogen depleting",
     hoursMin: 4,
     hoursMax: 12,
-    color: "#3b82f6",
-    glowColor: "#3b82f680",
+    color: "#6b8eaa",          // dusty steel blue
+    glowColor: "#6b8eaa80",
     xpMultiplier: 1.2,
   },
   {
@@ -36,8 +38,8 @@ export const STAGES: FastingStage[] = [
     description: "Ketosis kicking in",
     hoursMin: 12,
     hoursMax: 16,
-    color: "#f97316",
-    glowColor: "#f9731680",
+    color: "#d97757",          // ember (matches the brand accent)
+    glowColor: "#d9775780",
     xpMultiplier: 1.5,
   },
   {
@@ -46,8 +48,8 @@ export const STAGES: FastingStage[] = [
     description: "Cellular cleanup",
     hoursMin: 16,
     hoursMax: 24,
-    color: "#a855f7",
-    glowColor: "#a855f780",
+    color: "#4a7a7a",          // deep teal
+    glowColor: "#4a7a7a80",
     xpMultiplier: 2,
   },
   {
@@ -56,8 +58,8 @@ export const STAGES: FastingStage[] = [
     description: "Hormone surge",
     hoursMin: 24,
     hoursMax: 48,
-    color: "#ec4899",
-    glowColor: "#ec489980",
+    color: "#a05060",          // dusty crimson
+    glowColor: "#a0506080",
     xpMultiplier: 2.5,
   },
   {
@@ -66,8 +68,8 @@ export const STAGES: FastingStage[] = [
     description: "Mythic territory",
     hoursMin: 48,
     hoursMax: Infinity,
-    color: "#eab308",
-    glowColor: "#eab30880",
+    color: "#c9a961",          // antique gold
+    glowColor: "#c9a96180",
     xpMultiplier: 3,
   },
 ];
@@ -105,7 +107,14 @@ export function formatHoursMinutes(totalSeconds: number): { hours: number; minut
   };
 }
 
-export const PROTOCOLS: { id: string; name: string; hours: number; description: string }[] = [
+export interface Protocol {
+  id: string;
+  name: string;
+  hours: number;
+  description: string;
+}
+
+export const PROTOCOLS: Protocol[] = [
   { id: "16_8", name: "16:8", hours: 16, description: "16h fast, 8h eating window" },
   { id: "18_6", name: "18:6", hours: 18, description: "18h fast, 6h eating window" },
   { id: "20_4", name: "20:4 (Warrior)", hours: 20, description: "20h fast, 4h eating window" },

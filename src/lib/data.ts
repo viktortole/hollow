@@ -1,5 +1,18 @@
 import { load, Store } from "@tauri-apps/plugin-store";
 
+/**
+ * Tauri-store persistence layer.
+ *
+ * Single JSON file at the OS-conventional app-data dir. We persist a
+ * field-by-field projection of `AppState` (not the full state) so ephemeral UI
+ * state — `activePanel`, `isPillMode`, pending notifications,
+ * undo snapshot — never round-trips to disk.
+ *
+ * Schema: keep `PERSISTED_KEYS` and `PersistedState` in sync. Everything in
+ * the keys list gets read on load and written on save. Adding a field is one
+ * edit + one type entry — no separate save/load case statements.
+ */
+
 let store: Store | null = null;
 
 function isTauriRuntime(): boolean {
@@ -32,24 +45,51 @@ export interface PersistedState {
   nightOwlFasts: number;
   windowX: number | null;
   windowY: number | null;
+  hydrationToday: number;
+  hydrationGoalGlasses: number;
+  hydrationLastResetDate: string | null;
+  hydrationGoalCelebratedDate: string | null;
 }
+
+/**
+ * Single source of truth for what gets persisted. Adding a field?
+ *   1. Add it to `PersistedState` above.
+ *   2. Add the key string here.
+ *   3. Done — `loadState` reads it, `saveState` writes it.
+ */
+const PERSISTED_KEYS = [
+  "isFasting",
+  "fastStartTimestamp",
+  "targetHours",
+  "protocol",
+  "totalXp",
+  "completedFasts",
+  "currentStreak",
+  "longestStreak",
+  "lastFastDate",
+  "unlockedAchievements",
+  "stageEntryHistory",
+  "brokeStreak",
+  "maxLevelReached",
+  "settings",
+  "onboardingComplete",
+  "nightOwlFasts",
+  "windowX",
+  "windowY",
+  "hydrationToday",
+  "hydrationGoalGlasses",
+  "hydrationLastResetDate",
+  "hydrationGoalCelebratedDate",
+] as const satisfies readonly (keyof PersistedState)[];
 
 export async function loadState(): Promise<Partial<PersistedState>> {
   if (!isTauriRuntime()) return {};
-
   try {
     const s = await getStore();
-    const keys = [
-      "isFasting", "fastStartTimestamp", "targetHours", "protocol",
-      "totalXp", "completedFasts", "currentStreak", "longestStreak",
-      "lastFastDate", "unlockedAchievements", "stageEntryHistory",
-      "brokeStreak", "maxLevelReached", "settings", "onboardingComplete",
-      "nightOwlFasts", "windowX", "windowY",
-    ];
-    const result: Record<string, unknown> = {};
-    for (const key of keys) {
+    const result: Partial<PersistedState> = {};
+    for (const key of PERSISTED_KEYS) {
       const val = await s.get(key);
-      if (val !== undefined) result[key] = val;
+      if (val !== undefined) (result as Record<string, unknown>)[key] = val;
     }
     return result;
   } catch (e) {
@@ -60,27 +100,15 @@ export async function loadState(): Promise<Partial<PersistedState>> {
 
 export async function saveState(state: PersistedState): Promise<void> {
   if (!isTauriRuntime()) return;
-
   try {
     const s = await getStore();
-    await s.set("isFasting", state.isFasting);
-    await s.set("fastStartTimestamp", state.fastStartTimestamp);
-    await s.set("targetHours", state.targetHours);
-    await s.set("protocol", state.protocol);
-    await s.set("totalXp", state.totalXp);
-    await s.set("completedFasts", state.completedFasts);
-    await s.set("currentStreak", state.currentStreak);
-    await s.set("longestStreak", state.longestStreak);
-    await s.set("lastFastDate", state.lastFastDate);
-    await s.set("unlockedAchievements", state.unlockedAchievements);
-    await s.set("stageEntryHistory", state.stageEntryHistory);
-    await s.set("brokeStreak", state.brokeStreak);
-    await s.set("maxLevelReached", state.maxLevelReached);
-    await s.set("settings", state.settings);
-    await s.set("onboardingComplete", state.onboardingComplete);
-    await s.set("nightOwlFasts", state.nightOwlFasts ?? 0);
-    await s.set("windowX", state.windowX ?? null);
-    await s.set("windowY", state.windowY ?? null);
+    // Loop in declared order so disk writes are deterministic between releases.
+    for (const key of PERSISTED_KEYS) {
+      const value = state[key];
+      // `nightOwlFasts ?? 0` was the only previous defaulting; same defaulting still happens
+      // upstream in the slice's defaults so we don't repeat it here.
+      await s.set(key, value ?? null);
+    }
     await s.save();
   } catch (e) {
     console.error("Failed to save state:", e);
@@ -89,7 +117,6 @@ export async function saveState(state: PersistedState): Promise<void> {
 
 export async function clearState(): Promise<void> {
   if (!isTauriRuntime()) return;
-
   try {
     const s = await getStore();
     await s.clear();

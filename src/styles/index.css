@@ -1,91 +1,35 @@
+/**
+ * Hollow stylesheet entry point.
+ *
+ * Order matters:
+ *   1. Tailwind first — registers its layers.
+ *   2. tokens.css — :root variables, importable in isolation.
+ *   3. base.css — fonts, document reset, root layout.
+ *   4. utilities.css — typography, radius, scrollbar utilities.
+ *   5. keyframes.css — motion vocabulary.
+ *
+ * No styles in this file. If you need to add a rule, find the right sub-file.
+ * See docs/DESIGN-SYSTEM.md.
+ */
+
+/* Self-hosted Geist via @fontsource — bundled into the app, NO outbound network
+   request to fonts.googleapis.com. Each weight is a separate import so the
+   bundler can tree-shake unused ones. Weights here mirror what we actually use:
+   400 body, 500 numerals, 600 headings, 700 emphatic. Mono uses the same range
+   minus 300 (mono displays use 400+). See docs/PRIVACY.md "Network access". */
+@import "@fontsource/geist/400.css";
+@import "@fontsource/geist/500.css";
+@import "@fontsource/geist/600.css";
+@import "@fontsource/geist/700.css";
+@import "@fontsource/geist-mono/400.css";
+@import "@fontsource/geist-mono/500.css";
+@import "@fontsource/geist-mono/600.css";
+@import "@fontsource/geist-mono/700.css";
+
 @import "tailwindcss";
-
-:root {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  /* Widget interior spacing scale — single source of truth for layout rhythm.
-     The outer shell (App.tsx) owns the only border. Cards inside are flat fills. */
-  --widget-pad-x: 12px;
-  --widget-pad-y: 12px;
-  --card-gap: 10px;
-  --card-gap-sm: 8px;       /* tighter gap for dense grids (e.g. achievement grid) */
-  --card-pad-x: 12px;
-  --card-pad-y: 10px;
-  --card-pad-x-sm: 10px;   /* denser card padding for compact grids */
-  --card-pad-y-sm: 10px;
-  --card-radius: 12px;
-  --card-bg-neutral: rgba(255,255,255,0.045);
-
-  /* Selection states — fill-only (no borders). Differentiate via fill intensity + right-dot. */
-  --sel-bg:        rgba(168,85,247,0.20);  /* selected card/row fill */
-  --sel-dot:       #a855f7;               /* selected indicator dot color */
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body, #root {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  background: transparent;
-  user-select: none;
-  cursor: default;
-}
-
-.font-display {
-  font-family: "Orbitron", "JetBrains Mono", monospace;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
-
-.font-mono {
-  font-family: "JetBrains Mono", "Fira Code", monospace;
-}
-
-@keyframes pulse-glow {
-  0%, 100% { filter: drop-shadow(0 0 4px var(--glow-color, #a855f7)); }
-  50% { filter: drop-shadow(0 0 12px var(--glow-color, #a855f7)); }
-}
-
-@keyframes ring-fill {
-  from { stroke-dashoffset: 283; }
-}
-
-@keyframes stage-flash {
-  0% { opacity: 0; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1.05); }
-  100% { opacity: 0; transform: scale(1.2); }
-}
-
-@keyframes toast-in {
-  0% { opacity: 0; transform: translateY(10px) scale(0.95); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes level-up-flash {
-  0% { opacity: 0; }
-  20% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-@keyframes particle-burst {
-  0% { transform: translate(0, 0) scale(1); opacity: 1; }
-  100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+@import "./themes/light.css";   /* default — applies to :root */
+@import "./themes/dark.css";    /* opt-in via [data-theme="dark"] */
+@import "./tokens.css";         /* geometry/spacing tokens */
+@import "./base.css";
+@import "./utilities.css";
+@import "./keyframes.css";

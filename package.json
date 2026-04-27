@@ -1,15 +1,29 @@
 {
-  "name": "tauri-app",
+  "name": "hollow",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "An editorial-minimalist intermittent fasting widget. Track fasts, earn XP, unlock achievements. Desktop and mobile.",
+  "license": "MIT",
+  "author": "Viktor Toleski",
   "type": "module",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "typecheck": "tsc --noEmit",
+    "health": "node scripts/health.mjs",
+    "version:bump": "node scripts/bump-version.mjs",
+    "android:dev": "tauri android dev",
+    "android:build": "tauri android build --debug --apk"
   },
   "dependencies": {
+    "@fontsource/geist": "^5.2.8",
+    "@fontsource/geist-mono": "^5.2.7",
     "@tailwindcss/vite": "^4.2.4",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-fs": "^2.5.0",

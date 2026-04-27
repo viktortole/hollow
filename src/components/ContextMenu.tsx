@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { invoke } from "@tauri-apps/api/core";
 import { useStore } from "../lib/store";
+import { useEscapeKey } from "../hooks/useEscapeKey";
 import { Settings, BarChart2, Award, Pin, PinOff, Minimize2, EyeOff, X } from "lucide-react";
 import type { AppState } from "../lib/store";
 
@@ -17,15 +18,24 @@ const menuItems = [
 ] satisfies Array<{ id: AppState["activePanel"]; label: string; icon: typeof Settings }>;
 
 export function ContextMenu({ position, onClose, onCloseWidget }: ContextMenuProps) {
-  const { settings, toggleAlwaysOnTop, isPillMode, togglePillMode } = useStore();
+  // Per-field selectors — destructuring the whole store would re-render this menu
+  // on every store change in the entire app, including ticker updates.
+  // Even narrower for `alwaysOnTop` specifically — ContextMenu only
+  // reads that one field, no reason to re-render on theme/notify/sound flips.
+  const alwaysOnTop = useStore((s) => s.settings.alwaysOnTop);
+  const toggleAlwaysOnTop = useStore((s) => s.toggleAlwaysOnTop);
+  const isPillMode = useStore((s) => s.isPillMode);
+  const togglePillMode = useStore((s) => s.togglePillMode);
   const setActivePanel = useStore((s) => s.setActivePanel);
+
+  useEscapeKey(!!position, onClose);
 
   if (!position) return null;
 
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed z-[100]"
+        className="fixed z-contextmenu"
         style={{ left: position.x, top: position.y }}
         initial={{ opacity: 0, scale: 0.95, y: -4 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -37,12 +47,11 @@ export function ContextMenu({ position, onClose, onCloseWidget }: ContextMenuPro
         }}
       >
         <div
-          className="flex flex-col rounded-xl overflow-hidden"
+          className="flex flex-col r-card overflow-hidden"
           style={{
-            background: "rgba(15,15,25,0.98)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
-            minWidth: 160,
+            background: "var(--bg-2)",
+            boxShadow: "var(--shadow-popover)",
+            minWidth: 168,
           }}
         >
           {menuItems.map((item) => {
@@ -50,61 +59,61 @@ export function ContextMenu({ position, onClose, onCloseWidget }: ContextMenuPro
             return (
               <button
                 key={item.id}
-                className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-white/5 transition-colors"
+                className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-soft transition-colors"
                 onClick={() => {
                   setActivePanel(item.id);
                   onClose();
                 }}
               >
-                <Icon size={14} className="text-white/50" />
-                <span className="text-sm text-white/80">{item.label}</span>
+                <Icon size={14} className="text-ink-3" />
+                <span className="text-sm text-ink">{item.label}</span>
               </button>
             );
           })}
 
-          <div className="h-px bg-white/10" />
+          <div className="h-px bg-soft" />
 
           <button
-            className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-white/5 transition-colors"
+            className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-soft transition-colors"
             onClick={() => {
               toggleAlwaysOnTop();
               onClose();
             }}
           >
-            {settings.alwaysOnTop ? <PinOff size={14} className="text-white/50" /> : <Pin size={14} className="text-white/50" />}
-            <span className="text-sm text-white/80">
-              {settings.alwaysOnTop ? "Unpin (Not Always On Top)" : "Pin (Always On Top)"}
+            {alwaysOnTop ? <PinOff size={14} className="text-ink-3" /> : <Pin size={14} className="text-ink-3" />}
+            <span className="text-sm text-ink">
+              {alwaysOnTop ? "Unpin (Not Always On Top)" : "Pin (Always On Top)"}
             </span>
           </button>
 
           <button
-            className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-white/5 transition-colors"
+            className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-soft transition-colors"
             onClick={() => {
               togglePillMode();
               onClose();
             }}
           >
-            <Minimize2 size={14} className="text-white/50" />
-            <span className="text-sm text-white/80">
+            <Minimize2 size={14} className="text-ink-3" />
+            <span className="text-sm text-ink">
               {isPillMode ? "Expand Widget" : "Pill Mode"}
             </span>
           </button>
 
-          <div className="h-px bg-white/10" />
+          <div className="h-px bg-soft" />
 
           <button
-            className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-white/5 transition-colors"
+            className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-soft transition-colors"
             onClick={() => {
               onCloseWidget(); // hide to tray
               onClose();
             }}
           >
-            <EyeOff size={14} className="text-white/50" />
-            <span className="text-sm text-white/80">Hide to Tray</span>
+            <EyeOff size={14} className="text-ink-3" />
+            <span className="text-sm text-ink">Hide to Tray</span>
           </button>
 
           <button
-            className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-white/5 transition-colors"
+            className="flex items-center gap-3 px-4 py-2.5 text-left hover:bg-soft transition-colors"
             onClick={async () => {
               onClose();
               try {
@@ -115,8 +124,8 @@ export function ContextMenu({ position, onClose, onCloseWidget }: ContextMenuPro
               }
             }}
           >
-            <X size={14} className="text-white/50" />
-            <span className="text-sm text-white/80">Quit</span>
+            <X size={14} className="text-ink-3" />
+            <span className="text-sm text-ink">Quit</span>
           </button>
         </div>
       </motion.div>

@@ -1,14 +1,19 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Clock3, Flame, Play, Square, Target, Trophy } from "lucide-react";
 import { useStore } from "../lib/store";
-import { CircularProgress } from "./CircularProgress";
-import { StageIndicator } from "./StageIndicator";
-import { XpBar } from "./XpBar";
+import { CircularProgress, type RingMark } from "./CircularProgress";
+import { StageIndicator } from "../features/stages/StageIndicator";
 import { Timer } from "./Timer";
-import { ToastContainer } from "./Toast";
+import { ToastContainer } from "../features/notifications";
 import { PROTOCOLS, STAGES, getStageForHours, getStageIndex } from "../lib/stages";
-import { levelFromXp, xpProgressInLevel } from "../lib/gamification";
+import { STAGE_ICONS } from "../features/stages/stageIcons";
+import { useFormFactor } from "../hooks/useFormFactor";
+import { useFastingClock } from "../hooks/useFastingClock";
+import { usePersonalBest } from "../hooks/usePersonalBest";
+import { MoodPrompt, LastFastCard, FirstMilestoneCard, HeaderBar, ControlBar, TimestampsRow, RingDisplay, UndoSnackbar, ProtocolPicker, PersonalBestOverlay } from "../features/fasting";
+import { HydrationCard } from "../features/hydration";
+import { DisciplineStrip, AchievementsPreviewCard } from "../features/gamification";
+import { formatTimeOfDay } from "../lib/time";
 import { playCompleteFast, playStageUp } from "../lib/sounds";
 
 const STAGE_SOUND_COOLDOWN_MS = 30_000;
@@ -17,80 +22,145 @@ export function FastingWidget() {
   const isFasting = useStore((s) => s.isFasting);
   const fastStartTimestamp = useStore((s) => s.fastStartTimestamp);
   const targetHours = useStore((s) => s.targetHours);
-  const totalXp = useStore((s) => s.totalXp);
-  const currentStreak = useStore((s) => s.currentStreak);
   const startFast = useStore((s) => s.startFast);
   const endFast = useStore((s) => s.endFast);
+  const setFastStartTimestamp = useStore((s) => s.setFastStartTimestamp);
   const pendingStageUp = useStore((s) => s.pendingStageUp);
   const setPendingStageUp = useStore((s) => s.setPendingStageUp);
 
-  const [elapsed, setElapsed] = useState(0);
-  const [stageColor, setStageColor] = useState("#a855f7");
-  const [celebrating, setCelebrating] = useState(false);
+  // Canonical clock — single source of truth lives in useFastingClock.
+  const { elapsed } = useFastingClock();
   const prevStageRef = useRef(0);
   const stageSoundTimeRef = useRef<Record<number, number>>({});
 
+  // Reset stage refs when a fast begins or ends.
   useEffect(() => {
     if (!fastStartTimestamp) {
-      setElapsed(0);
-      setStageColor("#a855f7");
       prevStageRef.current = 0;
       stageSoundTimeRef.current = {};
       return;
     }
+    // Initialize prevStageRef to the user's CURRENT stage on mount.
+    // Prevents a false stage-up toast from firing on every reload when the user is
+    // already deep into a fast (e.g. they're at AUTOPHAGY=4 but ref starts at 0).
+    const initialSecs = Math.max(0, Math.floor((Date.now() - fastStartTimestamp) / 1000));
+    prevStageRef.current = getStageIndex(initialSecs / 3600);
+  }, [fastStartTimestamp]);
 
-    const update = () => {
-      const now = Date.now();
-      const secs = Math.max(0, Math.floor((now - fastStartTimestamp) / 1000));
-      const hours = secs / 3600;
-      const stage = getStageForHours(hours);
-      const stageIdx = getStageIndex(hours);
+  // Stage-transition detector. Watches elapsed (driven by useFastingClock) and
+  // fires a stage-up toast + sound when the user crosses a threshold. Sound is
+  // gated by a 30s per-stage cooldown so HMR/focus-recovery cannot replay it.
+  useEffect(() => {
+    if (!fastStartTimestamp) return;
+    const stageIdx = getStageIndex(elapsed / 3600);
+    if (stageIdx > prevStageRef.current) {
+      setPendingStageUp(stageIdx);
+      prevStageRef.current = stageIdx;
 
-      setElapsed(secs);
-      setStageColor(stage.color);
-
-      if (stageIdx > prevStageRef.current) {
-        setPendingStageUp(stageIdx);
-        prevStageRef.current = stageIdx;
-
-        if (useStore.getState().settings.soundEnabled) {
-          const lastFired = stageSoundTimeRef.current[stageIdx] ?? 0;
-          if (now - lastFired >= STAGE_SOUND_COOLDOWN_MS) {
-            playStageUp();
-            stageSoundTimeRef.current[stageIdx] = now;
-          }
+      if (useStore.getState().settings.soundEnabled) {
+        const now = Date.now();
+        const lastFired = stageSoundTimeRef.current[stageIdx] ?? 0;
+        if (now - lastFired >= STAGE_SOUND_COOLDOWN_MS) {
+          playStageUp();
+          stageSoundTimeRef.current[stageIdx] = now;
         }
       }
-    };
+    }
+  }, [elapsed, fastStartTimestamp, setPendingStageUp]);
 
-    update();
-    const interval = setInterval(update, 1000);
-    return () => clearInterval(interval);
-  }, [fastStartTimestamp, setPendingStageUp]);
-
-  const progress = fastStartTimestamp
-    ? Math.min(100, (elapsed / (targetHours * 3600)) * 100)
-    : 0;
+  // Canonical derived state — all UI labels read from here. No duplicate timer logic.
+  const targetSeconds = targetHours * 3600;
   const hoursElapsed = elapsed / 3600;
+  const remainingSeconds = Math.max(0, targetSeconds - elapsed);
+  const overSeconds = Math.max(0, elapsed - targetSeconds);
+  const progress = isFasting ? Math.min(100, (elapsed / targetSeconds) * 100) : 0;
+  const goalReached = isFasting && elapsed >= targetSeconds;
+
+  const { justBroken: showPersonalBest, longestSeconds: longestFastSeconds } =
+    usePersonalBest({ elapsed, isFasting });
+
   const currentStage = getStageForHours(hoursElapsed);
-  const level = levelFromXp(totalXp);
-  const xp = xpProgressInLevel(totalXp);
+  const stageColor = isFasting ? currentStage.color : "#b85a3b"; // ember accent in idle
   const protocol = PROTOCOLS.find((item) => item.hours === targetHours) ?? PROTOCOLS[0];
-  const nextStage = STAGES.find((stage) => stage.hoursMin > hoursElapsed);
-  const remainingHours = Math.max(0, targetHours - hoursElapsed);
+
+  // Time-of-day awareness — Started/Ends timestamps for the active state header row.
+  const startTimeLabel = useMemo(
+    () => (fastStartTimestamp ? formatTimeOfDay(fastStartTimestamp) : null),
+    [fastStartTimestamp]
+  );
+  const endTimeLabel = useMemo(
+    () => (fastStartTimestamp ? formatTimeOfDay(fastStartTimestamp + targetSeconds * 1000) : null),
+    [fastStartTimestamp, targetSeconds]
+  );
+
+  // Idle-state projected windows — what time the fast WOULD start now and end at goal.
+  const projectedStartLabel = useMemo(() => formatTimeOfDay(Date.now()), [elapsed]);
+  const projectedEndLabel = useMemo(
+    () => formatTimeOfDay(Date.now() + targetSeconds * 1000),
+    [elapsed, targetSeconds]
+  );
+  const eatingHours = Math.max(0, 24 - targetHours);
+
+  // STAGE MARKS — orbital icons positioned at hour-thresholds around the ring perimeter.
+  // Display range capped so 48h marks land just shy of 12 o'clock instead of wrapping onto 0h.
+  const displayMaxHours = Math.max(targetHours, 50);
+  const currentStageIdx = isFasting ? getStageIndex(hoursElapsed) : -1;
+  const ringMarks: RingMark[] = useMemo(
+    () =>
+      STAGES.map((s, i) => {
+        const Icon = STAGE_ICONS[s.id];
+        return {
+          atProgress: Math.min(0.97, s.hoursMin / displayMaxHours),
+          reached: isFasting && hoursElapsed >= s.hoursMin,
+          isActive: i === currentStageIdx,
+          color: s.color,
+          icon: Icon ? <Icon size={11} /> : null,
+          label: `${s.name} at ${s.hoursMin}h`,
+        };
+      }),
+    [hoursElapsed, isFasting, currentStageIdx, displayMaxHours]
+  );
+
+  // Goal-reached escalation tier — differentiates +5min vs +14h with intentional labeling.
+  const overtimeHours = overSeconds / 3600;
+  const goalTier = !goalReached ? null
+    : overtimeHours >= 24 ? { label: "Profound Fast", glow: "#fbbf24" }
+    : overtimeHours >= 12 ? { label: "Deep Fast",     glow: "#f59e0b" }
+    : overtimeHours >= 2  ? { label: "Extended Fast", glow: "#fde047" }
+    : { label: "Goal Reached", glow: "#eab308" };
+
+  const [celebrating, setCelebrating] = useState(false);
+  // EXTENDED MODE — user pressed "Keep Going" past goal. Suppresses celebration aura
+  // AND switches ControlBar to single "End Extended Fast (+Xh)" button so the UI
+  // reflects the conscious decision to push past goal.
+  const [extendedMode, setExtendedMode] = useState(false);
+  useEffect(() => {
+    if (!isFasting) setExtendedMode(false);
+  }, [isFasting]);
 
   const handleEndFast = useCallback((completed: boolean) => {
-    if (completed && hoursElapsed >= targetHours) {
+    if (completed && goalReached) {
       setCelebrating(true);
       if (useStore.getState().settings.soundEnabled) playCompleteFast();
       setTimeout(() => setCelebrating(false), 2000);
     }
     endFast(completed);
     prevStageRef.current = 0;
-  }, [hoursElapsed, targetHours, endFast]);
+  }, [goalReached, endFast]);
+
+  const handleKeepGoing = useCallback(() => {
+    setExtendedMode(true);
+  }, []);
+
+  // Atmospheric glow color follows the active stage during a fast, rests on ember when idle.
+  const ambientColor = isFasting ? stageColor : "#d97757";
+
+  // Form factor for future responsive layout (Phase 5+ scaffolding).
+  const formFactor = useFormFactor();
 
   return (
     <div
+      data-form-factor={formFactor}
       className="w-full h-full flex flex-col relative overflow-hidden"
       style={{
         paddingInline: "var(--widget-pad-x)",
@@ -102,101 +172,73 @@ export function FastingWidget() {
 
       <div
         className="absolute inset-x-0 top-0 h-28 pointer-events-none"
-        style={{ background: "radial-gradient(circle at top, rgba(168,85,247,0.24), transparent 70%)" }}
+        style={{ background: `radial-gradient(circle at top, ${ambientColor}26, transparent 70%)` }}
       />
 
       <AnimatePresence>
         {celebrating && (
           <motion.div
-            className="absolute inset-0 rounded-2xl pointer-events-none z-40 overflow-hidden"
+            className="absolute inset-0 r-card pointer-events-none z-overlay overflow-hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 0.3, 0] }}
             transition={{ duration: 1.5, times: [0, 0.2, 1] }}
           >
             <div
               className="absolute inset-0"
-              style={{ background: "radial-gradient(circle at center, rgba(234,179,8,0.6) 0%, transparent 70%)" }}
+              style={{ background: "radial-gradient(circle at center, var(--success-glow) 0%, transparent 70%)" }}
             />
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="relative flex items-center justify-between">
-        <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-2">
-            <span
-              className="h-2 w-2 rounded-full"
-              style={{
-                background: isFasting ? stageColor : "#a855f7",
-                boxShadow: `0 0 12px ${isFasting ? stageColor : "#a855f7"}`,
-              }}
-            />
-            <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/72">
-              {isFasting ? "Fasting Active" : "Ready"}
-            </span>
-          </div>
-          <span className="text-[9px] text-white/45">
-            {isFasting ? `${remainingHours.toFixed(1)}h to goal` : "Begin a focused fast"}
-          </span>
-        </div>
+      {/* PERSONAL BEST overlay — fires when current fast crosses your longest. */}
+      <PersonalBestOverlay
+        visible={showPersonalBest}
+        elapsedSeconds={elapsed}
+        longestFastSeconds={longestFastSeconds}
+      />
 
-        <div
-          className="rounded-full px-3 py-1 text-[10px] font-bold text-white/82"
-          style={{ background: "rgba(255,255,255,0.07)" }}
-        >
-          {protocol.name}
-        </div>
-      </div>
+      {/* HEADER — status pill + protocol stamp. Both shrink-safe at min width. */}
+      <HeaderBar
+        isFasting={isFasting}
+        goalReached={goalReached}
+        goalTierLabel={goalTier?.label ?? null}
+        remainingSeconds={remainingSeconds}
+        overSeconds={overSeconds}
+        protocol={protocol}
+        stageColor={stageColor}
+      />
 
-      <div
-        className="relative flex flex-col items-center"
-        style={{
-          background: "linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03))",
-          borderRadius: "var(--card-radius)",
-          paddingInline: "var(--card-pad-x)",
-          paddingBlock: "var(--card-pad-y)",
-          boxShadow: "0 18px 44px rgba(0,0,0,0.24)",
-        }}
-      >
-        <div className="absolute inset-4 rounded-full blur-2xl opacity-25" style={{ background: stageColor }} />
-        <div className="relative">
-          <CircularProgress
-            progress={progress}
-            size={164}
-            strokeWidth={8}
-            color={stageColor}
-            glowColor={`${stageColor}80`}
-          >
-            {isFasting ? (
-              <div className="flex flex-col items-center gap-1">
-                <Timer startTimestamp={fastStartTimestamp} targetHours={targetHours} />
-                <div className="text-[10px] font-semibold text-white/55">{Math.round(progress)}% complete</div>
-                {progress >= 100 && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="mt-1 px-2 py-0.5 rounded-full text-[8px] font-bold tracking-wider uppercase"
-                    style={{ background: "rgba(234,179,8,0.2)", color: "#facc15" }}
-                  >
-                    Target Reached
-                  </motion.div>
-                )}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-1">
-                <div className="text-[10px] font-bold text-white/55 uppercase tracking-[0.2em]">Target</div>
-                <div className="text-4xl font-black leading-none text-white">{targetHours}h</div>
-                <div className="text-[10px] text-white/48 text-center max-w-[110px]">{protocol.description}</div>
-              </div>
-            )}
-          </CircularProgress>
-        </div>
-      </div>
+      <RingDisplay
+        isFasting={isFasting}
+        goalReached={goalReached && !extendedMode}
+        progress={progress}
+        elapsed={elapsed}
+        targetSeconds={targetSeconds}
+        targetHours={targetHours}
+        eatingHours={eatingHours}
+        protocol={protocol}
+        stageColor={stageColor}
+        marks={ringMarks}
+        projectedStartLabel={projectedStartLabel}
+        projectedEndLabel={projectedEndLabel}
+      />
 
-      {isFasting ? (
+      {/* TIMESTAMPS — table-stakes for fasting apps. Shows when fast started and projected end.
+          Pencil affordance opens the start-time adjuster popover (for "I forgot to start" recovery). */}
+      {isFasting && startTimeLabel && endTimeLabel && (
+        <TimestampsRow
+          startTimeLabel={startTimeLabel}
+          endTimeLabel={endTimeLabel}
+          goalReached={goalReached}
+        />
+      )}
+
+      {/* STAGE — quiet, single line of context. */}
+      {isFasting && (
         <div
           style={{
-            background: "var(--card-bg-neutral)",
+            background: "var(--bg-2)",
             borderRadius: "var(--card-radius)",
             paddingInline: "var(--card-pad-x)",
             paddingBlock: "var(--card-pad-y)",
@@ -204,127 +246,49 @@ export function FastingWidget() {
         >
           <StageIndicator stage={currentStage} hoursElapsed={hoursElapsed} />
         </div>
-      ) : (
-        <div
-          className="grid grid-cols-[1fr_auto] items-center gap-3"
-          style={{
-            background: "var(--card-bg-neutral)",
-            borderRadius: "var(--card-radius)",
-            paddingInline: "var(--card-pad-x)",
-            paddingBlock: "var(--card-pad-y)",
-          }}
-        >
-          <div className="flex flex-col gap-0.5">
-            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/62">First Milestone</span>
-            <span className="text-xs text-white/84">
-              {nextStage ? `${nextStage.name} starts at ${nextStage.hoursMin}h` : "Every hour counts"}
-            </span>
-          </div>
-          <Clock3 size={16} className="text-white/48" />
-        </div>
       )}
 
-      <div className="grid grid-cols-3 gap-2" aria-label="Fasting stats">
-        <div
-          style={{
-            background: "rgba(168,85,247,0.16)",
-            borderRadius: "var(--card-radius)",
-            paddingInline: "var(--card-pad-x)",
-            paddingBlock: "var(--card-pad-y)",
-          }}
-        >
-          <Trophy size={13} className="mb-1 text-purple-300" />
-          <div className="text-[9px] uppercase tracking-[0.14em] text-white/45">Level</div>
-          <div className="text-sm font-bold text-white">{level}</div>
-        </div>
-        <div
-          style={{
-            background: "rgba(236,72,153,0.14)",
-            borderRadius: "var(--card-radius)",
-            paddingInline: "var(--card-pad-x)",
-            paddingBlock: "var(--card-pad-y)",
-          }}
-        >
-          <Target size={13} className="mb-1 text-pink-300" />
-          <div className="text-[9px] uppercase tracking-[0.14em] text-white/45">Next XP</div>
-          <div className="text-sm font-bold text-white">{xp.required - xp.current}</div>
-        </div>
-        <div
-          style={{
-            background: "rgba(249,115,22,0.14)",
-            borderRadius: "var(--card-radius)",
-            paddingInline: "var(--card-pad-x)",
-            paddingBlock: "var(--card-pad-y)",
-          }}
-        >
-          <Flame size={13} className="mb-1 text-orange-300" />
-          <div className="text-[9px] uppercase tracking-[0.14em] text-white/45">Streak</div>
-          <div className="text-sm font-bold text-white">{currentStreak}d</div>
-        </div>
-      </div>
+      {!isFasting && <ProtocolPicker />}
 
-      <XpBar level={level} totalXp={totalXp} />
+      <HydrationCard />
+
+      <DisciplineStrip />
+
+      <FirstMilestoneCard />
+
+      {!isFasting && <AchievementsPreviewCard />}
+
+      <LastFastCard />
 
       <div className="mt-auto w-full">
-        {!isFasting ? (
-          <motion.button
-            onClick={startFast}
-            className="w-full cursor-pointer py-3 rounded-xl font-black text-sm tracking-widest uppercase flex items-center justify-center gap-2 transition-all hover:brightness-110 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-300/60"
-            style={{
-              background: "linear-gradient(135deg, #a855f7, #ec4899)",
-              color: "#fff",
-              boxShadow: "0 12px 28px rgba(168,85,247,0.35)",
-              letterSpacing: "0.15em",
-            }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Play size={14} fill="#fff" />
-            Start Fast
-          </motion.button>
-        ) : (
-          <div className="flex gap-2">
-            <motion.button
-              onClick={() => handleEndFast(false)}
-              className="flex-1 cursor-pointer py-3 rounded-xl font-bold text-xs tracking-widest uppercase flex items-center justify-center gap-2 transition-all hover:brightness-110 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-red-300/50"
-              style={{
-                background: "rgba(239,68,68,0.28)",
-                color: "#f87171",
-                letterSpacing: "0.1em",
-              }}
-              whileTap={{ scale: 0.98 }}
-            >
-              End Fast
-            </motion.button>
-            <motion.button
-              onClick={() => handleEndFast(true)}
-              className="flex-1 cursor-pointer py-3 rounded-xl font-bold text-xs tracking-widest uppercase flex items-center justify-center gap-2 transition-all hover:brightness-110 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-300/50"
-              style={{
-                background: "linear-gradient(135deg, #22c55e, #16a34a)",
-                color: "#fff",
-                boxShadow: "0 4px 12px rgba(34,197,94,0.3)",
-                letterSpacing: "0.1em",
-              }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Square size={10} fill="#fff" />
-              Complete
-            </motion.button>
-          </div>
-        )}
+        <ControlBar
+          isFasting={isFasting}
+          goalReached={goalReached}
+          extendedMode={extendedMode}
+          overSeconds={overSeconds}
+          targetHours={targetHours}
+          onStart={startFast}
+          onEnd={handleEndFast}
+          onKeepGoing={handleKeepGoing}
+        />
       </div>
 
       <AnimatePresence>
         {pendingStageUp !== null && (
           <motion.div
-            className="absolute inset-0 rounded-2xl pointer-events-none z-30"
+            className="absolute inset-0 r-card pointer-events-none z-radial"
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 0.4, 0] }}
             transition={{ duration: 0.8 }}
             style={{ background: `radial-gradient(circle at center, ${STAGES[pendingStageUp]?.color}40 0%, transparent 70%)` }}
-            onAnimationComplete={() => setPendingStageUp(null)}
+            // Note: dismissal is owned by Toast.tsx (4s self-dismiss) so the labeled toast has time to render.
           />
         )}
       </AnimatePresence>
+
+      <MoodPrompt />
+
+      <UndoSnackbar />
     </div>
   );
 }

@@ -1,0 +1,59 @@
+/**
+ * Hollow base styles — font loading, document reset, root layout.
+ *
+ * No tokens here (those live in tokens.css). No utility classes (those live in utilities.css).
+ * No keyframes (those live in keyframes.css).
+ */
+
+/* Font @import lives in src/styles/index.css (must precede all other statements per CSS spec).
+   See DESIGN-SYSTEM.md "Don't-do list" for why Newsreader italic was dropped. */
+
+:root {
+  font-family: "Geist", "Söhne", -apple-system, system-ui, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  /* Note: NO global padding/margin reset. Tailwind preflight handles browser defaults.
+     A global `* { padding: 0 }` overrides every Tailwind padding utility because layered
+     utilities lose to non-layered rules in Tailwind v4. Don't reintroduce it. */
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: transparent;     /* widget chrome handled by App.tsx outermost div */
+  user-select: none;
+  cursor: default;
+  color: var(--ink);
+}
+
+/**
+ * Universal keyboard-focus ring.
+ *
+ * `:focus-visible` only matches when the element gained focus from a keyboard
+ * (Tab) or programmatic focus, not from a mouse click — so mouse users see no
+ * ring while keyboard users always do. Applied at document level so we don't
+ * have to remember to add it to every interactive element.
+ *
+ * Using ember at low alpha so the ring reads as "Hollow's accent" rather than
+ * a generic browser blue. Box-shadow over outline so corners stay rounded.
+ */
+:focus { outline: none; }
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ember-glow);
+  border-radius: var(--chip-radius);
+}
+/* Buttons that already have a background should get the ring outside their corner radius. */
+button:focus-visible,
+[role="switch"]:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible {
+  box-shadow: 0 0 0 2px var(--bg-0), 0 0 0 4px var(--ember);
+}

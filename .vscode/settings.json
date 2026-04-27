@@ -1,0 +1,36 @@
+{
+  "//": "Hollow workspace settings — committed so every contributor gets the same baseline. Override in your User settings if needed.",
+
+  "editor.formatOnSave": false,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "editor.detectIndentation": false,
+  "editor.tabSize": 2,
+  "editor.rulers": [100],
+
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "files.exclude": {
+    "**/node_modules": true,
+    "dist": true,
+    "src-tauri/target": true,
+    "src-tauri/gen": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "dist": true,
+    "src-tauri/target": true,
+    "src-tauri/gen": true,
+    "package-lock.json": true
+  },
+
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+
+  "[rust]": {
+    "editor.tabSize": 4
+  }
+}

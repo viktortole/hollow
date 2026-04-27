@@ -1,0 +1,29 @@
+# Hollow — editor config
+# Prevents whitespace + line-ending drift across VSCode, JetBrains, Vim, etc.
+# Most editors honor this without a plugin in 2026.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Markdown — trailing spaces are sometimes meaningful (line break syntax).
+[*.md]
+trim_trailing_whitespace = false
+
+# Rust convention is 4-space indent.
+[*.rs]
+indent_size = 4
+
+# Cargo / TOML
+[*.toml]
+indent_size = 4
+
+# Makefiles / shell — tabs are required by make.
+[Makefile]
+indent_style = tab

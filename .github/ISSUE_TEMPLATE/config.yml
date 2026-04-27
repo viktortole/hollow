@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Privacy / data-handling questions
+    url: https://github.com/wolverinetole/hollow/blob/main/docs/PRIVACY.md
+    about: Hollow's privacy promise is documented in the repo. Read it first.
+  - name: Release-process questions
+    url: https://github.com/wolverinetole/hollow/blob/main/docs/RELEASE-CHECKLIST.md
+    about: How releases get built and shipped.

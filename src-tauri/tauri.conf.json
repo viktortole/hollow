@@ -13,10 +13,10 @@
     "windows": [
       {
         "title": "Hollow",
-        "width": 360,
-        "height": 500,
-        "minWidth": 280,
-        "minHeight": 420,
+        "width": 400,
+        "height": 720,
+        "minWidth": 360,
+        "minHeight": 600,
         "resizable": true,
         "decorations": false,
         "transparent": true,
@@ -35,7 +35,15 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
+    "targets": [
+      "nsis"
+    ],
+    "publisher": "Viktor Toleski",
+    "copyright": "Copyright (c) 2026 Viktor Toleski",
+    "category": "HealthcareAndFitness",
+    "shortDescription": "Editorial intermittent fasting widget",
+    "longDescription": "Hollow is a minimalist intermittent fasting widget. Track fasts, watch your metabolic stages unfold, earn XP, and unlock achievements. Always-on-top on desktop, ready for mobile.",
+    "homepage": "https://github.com/wolverinetole/hollow",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -47,6 +55,12 @@
       "nsis": {
         "installMode": "currentUser"
       }
+    },
+    "iOS": {
+      "minimumSystemVersion": "13.0"
+    },
+    "android": {
+      "minSdkVersion": 24
     }
   }
 }

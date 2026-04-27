@@ -1,43 +1,26 @@
-import { useEffect, useState } from "react";
 import { formatElapsed } from "../lib/stages";
 
 interface TimerProps {
-  startTimestamp: number | null;
-  targetHours: number;
+  elapsed: number;          // seconds since fast start
+  targetSeconds: number;    // goal duration in seconds
 }
 
-export function Timer({ startTimestamp, targetHours }: TimerProps) {
-  const [elapsed, setElapsed] = useState(0);
-
-  useEffect(() => {
-    if (!startTimestamp) {
-      setElapsed(0);
-      return;
-    }
-
-    const update = () => {
-      const now = Date.now();
-      setElapsed(Math.max(0, Math.floor((now - startTimestamp) / 1000)));
-    };
-
-    update();
-    const interval = setInterval(update, 1000);
-    return () => clearInterval(interval);
-  }, [startTimestamp]);
-
-  const remaining = Math.max(0, targetHours * 3600 - elapsed);
-  const progress = Math.min(100, (elapsed / (targetHours * 3600)) * 100);
+export function Timer({ elapsed, targetSeconds }: TimerProps) {
+  const remaining = targetSeconds - elapsed;
+  const reachedGoal = remaining <= 0;
 
   return (
-    <div className="flex flex-col items-center gap-0.5">
-      <div className="font-mono text-3xl font-bold tracking-widest text-white/90">
+    <div className="flex flex-col items-center gap-1">
+      <div
+        className="font-mono text-[28px] tabular-nums leading-none"
+        style={{ color: "var(--ink)", fontWeight: 500, letterSpacing: "0.02em" }}
+      >
         {formatElapsed(elapsed)}
       </div>
-      <div className="text-[10px] text-white/40 font-mono">
-        {remaining > 0
-          ? `-${formatElapsed(remaining)} remaining`
-          : "+" + formatElapsed(elapsed - targetHours * 3600) + " over"
-        }
+      <div className="label-cap text-[8.5px]" style={{ color: "var(--ink-3)" }}>
+        {reachedGoal
+          ? `+${formatElapsed(-remaining)} over goal`
+          : `${formatElapsed(remaining)} remaining`}
       </div>
     </div>
   );

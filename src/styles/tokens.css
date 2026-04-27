@@ -1,0 +1,51 @@
+/**
+ * Hollow design tokens — geometry + spacing only.
+ *
+ * COLOR tokens live in src/styles/themes/{light,dark}.css.
+ * They cascade in via `:root` (default = light) or `[data-theme="dark"]`.
+ *
+ * If a value appears twice in code without a token, that's a missing token.
+ * See docs/DESIGN-SYSTEM.md.
+ */
+
+:root {
+  /* GEOMETRY — same across themes */
+  --card-radius:  3px;
+  --pill-radius:  3px;
+  --chip-radius:  2px;
+
+  --widget-pad-x: 14px;
+  --widget-pad-y: 12px;
+  --card-gap:     8px;
+  --card-gap-sm:  6px;
+  --card-pad-x:   12px;
+  --card-pad-y:   10px;
+  --card-pad-x-sm:10px;
+  --card-pad-y-sm:10px;
+
+  --button-h-sm:  28px;
+  --button-h-md:  36px;
+  --button-h-lg:  44px;
+
+  /* BREAKPOINTS */
+  --bp-compact: 480px;
+
+  /* Z-INDEX SCALE — single ladder for every overlay in the app.
+     If you write a literal z-[N] anywhere, you're breaking this scale.
+     Ranges leave room for ad-hoc layering inside each tier. */
+  --z-base:        0;     /* default content */
+  --z-card:        10;    /* cards w/ shadows */
+  --z-dragregion:  15;    /* title bar drag */
+  --z-overlay:     20;    /* ambient glows */
+  --z-radial:      30;    /* in-widget radial flashes */
+  --z-toast:       50;    /* notification banner */
+  --z-pb:          55;    /* personal-best announcement */
+  --z-popover:     70;    /* protocol picker, edit-start */
+  --z-pillmode:    80;    /* pill-mode UI */
+  --z-contextmenu: 100;   /* right-click menu */
+
+  /* LEGACY ALIASES (Phase 2 transition; remove in Phase 2.7 token sweep) */
+  --card-bg-neutral: var(--bg-2);
+  --sel-bg:          var(--bg-3);
+  --sel-dot:         var(--ember);
+}

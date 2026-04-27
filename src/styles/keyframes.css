@@ -1,0 +1,63 @@
+/**
+ * Hollow keyframe animations.
+ *
+ * Motion vocabulary: calm, mechanical. No bounce, no spring, no rotation outside loaders.
+ * See docs/DESIGN-SYSTEM.md "Motion vocabulary" section.
+ */
+
+/**
+ * pulse-glow — used for the active stage dot and ring tip.
+ * Reads as a heartbeat: subtle, rhythmic, not insistent.
+ * --glow-color is set per-element via inline style.
+ */
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px var(--glow-color, var(--ember))); }
+  50%      { filter: drop-shadow(0 0 12px var(--glow-color, var(--ember))); }
+}
+
+/**
+ * ring-fill — initial draw-on for the progress arc when a fast starts.
+ * One-shot, 0.8s ease-out.
+ */
+@keyframes ring-fill {
+  from { stroke-dashoffset: 283; }
+}
+
+/**
+ * stage-flash — brief radial color wash when crossing into a new metabolic stage.
+ * Plays alongside the labeled stage-up toast for color emphasis.
+ */
+@keyframes stage-flash {
+  0%   { opacity: 0; transform: scale(0.8); }
+  50%  { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 0; transform: scale(1.2); }
+}
+
+/**
+ * toast-in — entry animation for notification toasts.
+ * Slide-up + fade + slight scale. 220ms ease-out.
+ */
+@keyframes toast-in {
+  0%   { opacity: 0; transform: translateY(10px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/**
+ * mark-glow-in — fires on a stage mark when its hour-threshold is just crossed.
+ * Phase 4. Triggered when useStageDetection().justEntered matches a mark's stage index.
+ * --glow-color is set per-mark via inline style (the stage's color).
+ */
+@keyframes mark-glow-in {
+  0%   { opacity: 0; transform: scale(0.6); filter: drop-shadow(0 0 0 transparent); }
+  60%  { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 6px var(--glow-color)); }
+}
+
+/**
+ * mark-pulse — slow pulse on the active stage mark.
+ * 3s ease-in-out infinite. Subliminal, not insistent.
+ */
+@keyframes mark-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.15); }
+}
