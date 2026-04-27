@@ -54,13 +54,9 @@ A complete popover-dismissal contract would be `useEscapeKey` + `useOutsideClick
 
 ---
 
-## 5. Cargo.toml uses unpinned `tauri = "2"`
+## 5. ~~Cargo.toml uses unpinned `tauri = "2"`~~ — RESOLVED 2026-04-27
 
-**File:** `src-tauri/Cargo.toml`
-
-`Cargo.lock` provides reproducibility for now. Before publishing v1.0.0 we should pin to an explicit version (e.g. `tauri = "=2.5.0"`) so a future `cargo update` doesn't silently move the build target.
-
-Tracked in `RELEASE-CHECKLIST.md` step 5 + `ARCHITECTURE.md` deferred-decisions log.
+`tauri` and `tauri-build` are now pinned exact (`=2.10.3` and `=2.5.6`) in `src-tauri/Cargo.toml`. Bump deliberately, not accidentally. Plugins (`tauri-plugin-{opener,store,fs}`) still float on minor since they're stable across patches.
 
 ---
 

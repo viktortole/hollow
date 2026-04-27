@@ -272,7 +272,7 @@ The PR template adds a checklist for things greps can't catch (token discipline,
 | Mobile UI form factor | Compact-layout grid is stubbed in Phase 5 with `useFormFactor()` but not implemented. | Phase 7. |
 | Test framework | Vitest planned but not introduced this round. The slice-split makes future tests cheap. | Before Phase 6 to gate regressions. |
 | State machine library (XState etc) | Rejected. Four small slices are simpler than a state machine and match the team's React idiom. | If state complexity outgrows current model. |
-| Pinned Tauri 2 version | Currently floats on `2` (Cargo.toml). `Cargo.lock` provides reproducibility. Pin explicitly before public release. | Before v1.0.0 publish. |
+| Pinned Tauri 2 version | Resolved 2026-04-27: `tauri = "=2.10.3"` and `tauri-build = "=2.5.6"` pinned exact in `src-tauri/Cargo.toml`. Plugins still float on minor. | — |
 | User profile | Deferred to Phase 6 alongside cloud sync. A local-only display name was considered and rejected (UI noise without payoff). | Phase 6. |
 
 ---

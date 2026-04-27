@@ -10,7 +10,9 @@ name = "hollow_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+# Pinned to a specific 2.x for reproducible builds. Bump deliberately, not
+# accidentally — see docs/RELEASE-CHECKLIST.md and KNOWN-ISSUES § 5.
+tauri-build = { version = "=2.5.6", features = [] }
 
 # Cargo features — switch between desktop (default) and mobile builds.
 #   cargo build                                    → desktop (default)
@@ -21,7 +23,9 @@ desktop = ["tauri/tray-icon"]
 mobile = []
 
 [dependencies]
-tauri = { version = "2", features = ["tray-icon"] }
+# Tauri itself is pinned exact for v1.0.0 release reproducibility. The plugins
+# float on minor since they're more stable across patches.
+tauri = { version = "=2.10.3", features = ["tray-icon"] }
 tauri-plugin-opener = "2"
 tauri-plugin-store = "2"
 tauri-plugin-fs = "2"
