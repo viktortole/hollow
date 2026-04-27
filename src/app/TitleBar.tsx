@@ -63,17 +63,13 @@ export function TitleBar({ isPillMode, togglePillMode, onCloseWidget }: TitleBar
         paddingTop: isMobile() ? "env(safe-area-inset-top, 0px)" : 0,
       } as React.CSSProperties}
     >
-      <div className="flex items-baseline gap-1.5">
-        <span
-          className="label-cap text-[11px]"
-          style={{ color: "var(--ink)", letterSpacing: "0.32em", fontWeight: 600 }}
-        >
-          HOLLOW
-        </span>
-        <span className="font-mono text-[8px] tabular-nums" style={{ color: "var(--ink-3)" }}>
-          ◊
-        </span>
-      </div>
+      {/* Just the wordmark — the trailing ◊ glyph read as a typo (audit #13). */}
+      <span
+        className="label-cap text-[11px]"
+        style={{ color: "var(--ink)", letterSpacing: "0.32em", fontWeight: 600 }}
+      >
+        HOLLOW
+      </span>
       <div
         className="flex items-center gap-1.5"
         style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}

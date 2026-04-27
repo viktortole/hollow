@@ -137,9 +137,13 @@ export function CircularProgress({
           const dotX = center + dotRadius * cosT;
           const dotY = center + dotRadius * sinT;
 
+          // Bumped tick width and unreached opacity so the marks actually read
+          // around the ring (audit #6 — they were nearly invisible). Reached
+          // marks now use the stage color at full strength; unreached use ink
+          // at 60% alpha — strong enough to read against the track.
           const tickColor = mark.reached ? mark.color : "var(--ink-3)";
-          const tickOpacity = mark.reached ? 1 : 0.35;
-          const tickWidth = mark.reached ? 1.5 : 1;
+          const tickOpacity = mark.reached ? 1 : 0.6;
+          const tickWidth = mark.reached ? 2.5 : 1.75;
 
           return (
             <g key={`mark-${i}`} aria-label={mark.label}>

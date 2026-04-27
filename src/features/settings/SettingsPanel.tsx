@@ -53,6 +53,7 @@ export function SettingsPanel() {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [customHours, setCustomHours] = useState(settings.customHours.toString());
   const [importMessage, setImportMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [protocolsExpanded, setProtocolsExpanded] = useState(false);
 
   const handleExport = () => {
     const json = exportData();
@@ -122,10 +123,12 @@ export function SettingsPanel() {
       />
 
       <div className="flex-1 flex flex-col gap-4 overflow-y-auto scrollbar-hide pr-0.5">
-        {/* FASTING */}
+        {/* FASTING — collapsible. Default shows ONLY the selected protocol so
+            the user can scroll past to Hydration/Notifications/Data without
+            wading through 8 cards every time (audit #12). */}
         <Section title="Fasting">
           <div className="flex flex-col gap-1">
-            {PROTOCOLS.map((p) => {
+            {PROTOCOLS.filter((p) => protocolsExpanded || protocol === p.id).map((p) => {
               const selected = protocol === p.id;
               return (
                 <button
@@ -155,6 +158,18 @@ export function SettingsPanel() {
                 </button>
               );
             })}
+            <button
+              type="button"
+              onClick={() => setProtocolsExpanded((v) => !v)}
+              className="flex items-center justify-center gap-1 py-1.5 cursor-pointer label-cap text-[9px]"
+              style={{ color: "var(--ink-3)", letterSpacing: "0.18em" }}
+              aria-expanded={protocolsExpanded}
+            >
+              {protocolsExpanded
+                ? "Show less"
+                : `Show all ${PROTOCOLS.length} protocols`}
+              <span style={{ color: "var(--ink-4)" }}>{protocolsExpanded ? "▴" : "▾"}</span>
+            </button>
             {protocol === "custom" && (
               <div
                 className="flex items-center gap-2 px-3 py-2 mt-1"

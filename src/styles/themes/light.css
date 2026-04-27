@@ -14,12 +14,15 @@
 
 :root,
 [data-theme="light"] {
-  /* SURFACES */
-  --bg-0: #f3efe7;
-  --bg-1: #ebe6db;
-  --bg-2: #ffffff;
-  --bg-3: #e2dccf;
-  --hairline: rgba(31, 28, 24, 0.08);
+  /* SURFACES — stratification was too subtle (audit #16). bg-1 darkened
+     slightly so the secondary-card surface ("informational" cards) reads as
+     distinct from the widget interior. bg-3 also nudged darker so hover/
+     selected states are unmistakable. */
+  --bg-0: #f3efe7;        /* outermost cream paper */
+  --bg-1: #e7e1d3;        /* widget interior — darker than before for contrast */
+  --bg-2: #ffffff;        /* primary cards — pure white pops vs darker bg-1 */
+  --bg-3: #d8d2c4;        /* hover/selected — clearly different from bg-1 */
+  --hairline: rgba(31, 28, 24, 0.10);  /* slightly stronger so card edges define */
 
   /* INK */
   --ink:   #1f1c18;
@@ -45,10 +48,12 @@
   --gold-soft: rgba(168, 132, 69, 0.14);
   --gold-glow: rgba(168, 132, 69, 0.32);
 
-  /* SHADOWS */
+  /* SHADOWS — primary cards now get a slightly stronger drop so they lift
+     visibly off the darker bg-1 surface (audit #16 stratification). */
   --shadow-sm:    none;
-  --shadow-card:  0 1px 0 rgba(255, 255, 255, 0.7) inset,
-                  0 1px 1px rgba(31, 28, 24, 0.04);
+  --shadow-card:  0 1px 0 rgba(255, 255, 255, 0.85) inset,
+                  0 2px 4px rgba(31, 28, 24, 0.06),
+                  0 1px 0 rgba(31, 28, 24, 0.04);
   --shadow-pill:  0 6px 16px rgba(31, 28, 24, 0.10);
   --shadow-popover: 0 10px 24px rgba(31, 28, 24, 0.16),
                     0 0 0 1px var(--hairline) inset;

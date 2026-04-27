@@ -155,9 +155,12 @@ export const ACHIEVEMENTS: Achievement[] = [
     condition: (s) => s.totalFasts >= 5,
     progress: (s) => p(s.totalFasts, 5),
   },
+  // Level milestone achievements — names are intentionally NOT the same as the
+  // rank titles in `gamification.ts` RANKS to avoid the "Disciplined the rank
+  // vs Disciplined the achievement" confusion the user spotted.
   {
     id: "level_5",
-    name: "Disciplined",
+    name: "First Five",
     description: "Reach level 5",
     icon: "trending-up",
     secret: false,
@@ -167,7 +170,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   },
   {
     id: "level_10",
-    name: "Metabolic",
+    name: "Decade Deep",
     description: "Reach level 10",
     icon: "trending-up",
     secret: false,
@@ -177,7 +180,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   },
   {
     id: "level_15",
-    name: "Renewed",
+    name: "Eternal Practice",
     description: "Reach level 15",
     icon: "trending-up",
     secret: false,

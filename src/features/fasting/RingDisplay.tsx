@@ -24,8 +24,8 @@ interface RingDisplayProps {
  *
  * Two render modes inside the ring center:
  *   - **Active**: hero mono timer + "% complete" support label
- *   - **Idle**: protocol name + "{targetHours}h fast · {eatingHours}h eat" sublabel
- *     + projected start/end timestamps
+ *   - **Idle**: status pill + protocol headline. Projected window + XP preview
+ *     live OUTSIDE the ring (in a small row below) so the center can breathe.
  *
  * The gold goal-reached aura overlays the ring when `goalReached` is true,
  * earning attention with a slow 6.4s pulse rather than binary on/off.
@@ -39,19 +39,24 @@ export function RingDisplay({
   elapsed,
   targetSeconds,
   targetHours,
-  eatingHours,
   protocol,
   stageColor,
   marks,
   projectedStartLabel,
   projectedEndLabel,
 }: RingDisplayProps) {
+  // Drop unused prop noise — we no longer render the eatingHours line inside the
+  // ring (it duplicated the protocol picker chip below). Kept in the interface
+  // for back-compat with parent's prop drilling.
+  void targetHours;
+
   return (
     <div className="relative flex flex-col items-center justify-center py-1">
-      {/* Stage-color ambient glow behind the ring */}
+      {/* Stage-color ambient glow behind the ring. Dropped opacity so the cream
+          surface in light mode doesn't read as a watercolor smear (audit #5). */}
       <div
-        className="absolute inset-x-6 top-1/2 -translate-y-1/2 h-28 rounded-full blur-2xl opacity-25 pointer-events-none"
-        style={{ background: stageColor }}
+        className="absolute inset-x-6 top-1/2 -translate-y-1/2 h-28 rounded-full blur-2xl pointer-events-none"
+        style={{ background: stageColor, opacity: 0.14 }}
       />
       {/* Goal-reached gold aura — slow swelling pulse, only when past goal */}
       {goalReached && (
@@ -90,13 +95,16 @@ export function RingDisplay({
             <div className="flex flex-col items-center gap-0.5">
               <Timer elapsed={elapsed} targetSeconds={targetSeconds} />
               <div
-                className="font-mono mt-0.5"
+                className="font-mono mt-0.5 tabular-nums"
                 style={{ fontSize: "9.5px", color: "var(--ink-3)" }}
               >
                 {Math.round(progress)}% complete
               </div>
             </div>
           ) : (
+            // IDLE — only status pill + protocol headline live inside the ring.
+            // Projected window + XP preview moved to the row BELOW the ring so
+            // the center reads as one anchored statement (audit #10).
             <div className="flex flex-col items-center gap-0.5 px-3">
               <div
                 className="label-cap text-[8px]"
@@ -104,10 +112,9 @@ export function RingDisplay({
               >
                 Ready
               </div>
-              {/* Split protocol.name on the parenthetical so a name like "20:4 (Warrior)"
-                  doesn't wrap and overflow the 172px ring. The ratio is the headline
-                  (big mono); the nickname is supporting label below. */}
               {(() => {
+                // Split protocol.name on parenthetical so "20:4 (Warrior)" stacks
+                // (ratio big · nickname small) instead of wrapping at 172px ring.
                 const match = protocol.name.match(/^([^(]+?)\s*\((.+)\)\s*$/);
                 const headline = match ? match[1] : protocol.name;
                 const sub = match ? match[2] : null;
@@ -116,7 +123,7 @@ export function RingDisplay({
                     <div
                       className="font-mono leading-none tabular-nums mt-1 truncate max-w-full"
                       style={{
-                        fontSize: "32px",
+                        fontSize: "36px",
                         fontWeight: 700,
                         color: "var(--ink)",
                         letterSpacing: "-0.025em",
@@ -126,8 +133,8 @@ export function RingDisplay({
                     </div>
                     {sub && (
                       <div
-                        className="label-cap text-[7.5px] truncate max-w-full"
-                        style={{ color: "var(--ink-3)", letterSpacing: "0.16em", marginTop: "1px" }}
+                        className="label-cap text-[8px] truncate max-w-full"
+                        style={{ color: "var(--ink-3)", letterSpacing: "0.20em", marginTop: "2px" }}
                       >
                         {sub}
                       </div>
@@ -135,43 +142,38 @@ export function RingDisplay({
                   </>
                 );
               })()}
-              <div className="flex items-baseline gap-1 mt-1.5 font-mono text-[10px] tabular-nums">
-                <span style={{ color: "var(--ember)", fontWeight: 600 }}>
-                  {targetHours}h
-                </span>
-                <span className="label-cap text-[7.5px]" style={{ color: "var(--ink-3)", letterSpacing: "0.18em" }}>fast</span>
-                <span style={{ color: "var(--ink-4)" }}>·</span>
-                <span style={{ color: "var(--ink-2)", fontWeight: 600 }}>
-                  {eatingHours}h
-                </span>
-                <span className="label-cap text-[7.5px]" style={{ color: "var(--ink-3)", letterSpacing: "0.18em" }}>eat</span>
-              </div>
-              <div
-                className="mt-2 pt-1.5 flex items-center gap-1.5 text-[9px] font-mono tabular-nums"
-                style={{ borderTop: "1px solid var(--hairline)" }}
-                aria-label={`Projected window ${projectedStartLabel} to ${projectedEndLabel}`}
-              >
-                <span style={{ color: "var(--ink)" }}>{projectedStartLabel}</span>
-                <span style={{ color: "var(--ember)" }}>→</span>
-                <span style={{ color: "var(--ink)" }}>{projectedEndLabel}</span>
-              </div>
-              {/* XP preview — anticipation of the reward */}
-              <div
-                className="mt-1 flex items-center gap-1 text-[9px] font-mono tabular-nums"
-                aria-label={`Estimated reward ${predictedXpForFast(targetHours, STAGES)} XP`}
-              >
-                <span style={{ color: "var(--ink-3)" }}>≈</span>
-                <span style={{ color: "var(--gold)", fontWeight: 700 }}>
-                  {predictedXpForFast(targetHours, STAGES)}
-                </span>
-                <span className="label-cap text-[7px]" style={{ color: "var(--ink-3)", letterSpacing: "0.18em" }}>
-                  XP reward
-                </span>
-              </div>
             </div>
           )}
         </CircularProgress>
       </div>
+
+      {/* Below-ring info row — only visible in idle. Projected start/end window
+          + XP reward preview, separated from the ring center for legibility. */}
+      {!isFasting && (
+        <div className="mt-3 flex items-baseline gap-3 text-[10px] font-mono tabular-nums">
+          <span style={{ color: "var(--ink-2)" }}>
+            {projectedStartLabel}
+            <span className="mx-1.5" style={{ color: "var(--ember)" }}>→</span>
+            {projectedEndLabel}
+          </span>
+          <span style={{ color: "var(--ink-4)" }}>·</span>
+          <span
+            className="flex items-baseline gap-1"
+            aria-label={`Estimated reward ${predictedXpForFast(targetHours, STAGES)} XP`}
+          >
+            <span style={{ color: "var(--ink-3)" }}>up to</span>
+            <span style={{ color: "var(--gold)", fontWeight: 700 }}>
+              {predictedXpForFast(targetHours, STAGES)}
+            </span>
+            <span
+              className="label-cap text-[7.5px]"
+              style={{ color: "var(--ink-3)", letterSpacing: "0.18em" }}
+            >
+              XP
+            </span>
+          </span>
+        </div>
+      )}
     </div>
   );
 }

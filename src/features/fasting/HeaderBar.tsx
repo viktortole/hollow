@@ -32,9 +32,10 @@ export function HeaderBar({
   protocol,
   stageColor,
 }: HeaderBarProps) {
+  // Use plain text (no bullet) so the separator doesn't get eaten on light cream.
   const subline = isFasting
     ? goalReached
-      ? `+${(overSeconds / 3600).toFixed(1)}h beyond goal`
+      ? `${(overSeconds / 3600).toFixed(1)}h past your goal`
       : `${(remainingSeconds / 3600).toFixed(1)}h remaining`
     : protocol.description;
   const headerColor = goalReached ? "var(--gold)" : "var(--ink)";

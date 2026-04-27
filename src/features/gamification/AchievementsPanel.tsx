@@ -91,8 +91,8 @@ export function AchievementsPanel() {
                   {RARITY_LABELS[rarity]}
                 </span>
                 <span
-                  className="font-mono text-[8.5px] tabular-nums"
-                  style={{ color: "var(--ink-3)" }}
+                  className="font-mono text-[9px] tabular-nums"
+                  style={{ color: unlockedInRarity > 0 ? "var(--ink)" : "var(--ink-2)", fontWeight: 600 }}
                 >
                   {unlockedInRarity}/{items.length}
                 </span>
@@ -117,24 +117,32 @@ export function AchievementsPanel() {
                         boxShadow: isUnlocked
                           ? `var(--shadow-card), 0 0 12px ${colors.glow}`
                           : "var(--shadow-card)",
-                        border: isUnlocked ? `1px solid ${colors.text}55` : "1px solid transparent",
-                        opacity: isUnlocked ? 1 : 0.7,
+                        // Locked cards now get a hairline rarity border so the rarity
+                        // is visible even on locked items (audit #8). Unlocked uses
+                        // a stronger border color.
+                        border: isUnlocked
+                          ? `1px solid ${colors.text}55`
+                          : `1px solid ${colors.text}22`,
+                        opacity: isUnlocked ? 1 : 0.85,
                       }}
                       initial={{ opacity: 0, scale: 0.97 }}
-                      animate={{ opacity: isUnlocked ? 1 : 0.7, scale: 1 }}
+                      animate={{ opacity: isUnlocked ? 1 : 0.85, scale: 1 }}
                     >
                       <div className="flex items-start justify-between">
                         <div
                           className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
                           style={{
-                            background: isUnlocked ? colors.bg : "var(--bg-3)",
-                            border: isUnlocked ? `1px solid ${colors.text}` : "none",
+                            background: isUnlocked ? colors.bg : `${colors.text}10`,
+                            border: `1px solid ${isUnlocked ? colors.text : colors.text + '40'}`,
                           }}
                         >
                           {isUnlocked ? (
                             <Award size={13} style={{ color: colors.text }} />
                           ) : (
-                            <Lock size={11} style={{ color: "var(--ink-4)" }} />
+                            // Locked padlock now uses a tinted version of the rarity
+                            // color (40% alpha) instead of generic gray ink-4 so a
+                            // locked legendary feels different from a locked common.
+                            <Lock size={11} style={{ color: `${colors.text}99` }} />
                           )}
                         </div>
                       </div>

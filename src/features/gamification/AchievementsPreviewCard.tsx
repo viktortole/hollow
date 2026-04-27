@@ -80,27 +80,31 @@ export function AchievementsPreviewCard() {
             const ratio = pr.target > 0 ? Math.min(1, pr.current / pr.target) : 0;
             const colors = RARITY_COLORS[a.rarity];
             return (
-              <div key={a.id} className="flex items-center gap-2">
+              <div key={a.id} className="flex items-center gap-2.5">
+                {/* Bigger icon (was 5×5 with a 9px award — looked gray-uniform at
+                    that size). Now 7×7 with 12px award + rarity-tinted border so
+                    the rarity is unmissable at a glance (audit #7). */}
                 <div
-                  className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                  className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center"
                   style={{
                     background: colors.bg,
-                    boxShadow: ratio > 0.7 ? `0 0 6px ${colors.glow}` : undefined,
+                    border: `1px solid ${colors.text}`,
+                    boxShadow: ratio > 0.7 ? `0 0 8px ${colors.glow}` : undefined,
                   }}
                 >
-                  <Award size={9} style={{ color: colors.text }} />
+                  <Award size={12} style={{ color: colors.text }} />
                 </div>
                 <div className="flex-1 min-w-0 flex flex-col gap-0.5">
                   <div className="flex items-baseline justify-between gap-2">
                     <span
                       className="text-[10.5px] truncate"
-                      style={{ color: "var(--ink)", fontWeight: 600 }}
+                      style={{ color: colors.text, fontWeight: 700, letterSpacing: "-0.005em" }}
                     >
                       {a.name}
                     </span>
                     <span
                       className="font-mono text-[9px] tabular-nums flex-shrink-0"
-                      style={{ color: colors.text }}
+                      style={{ color: "var(--ink-3)" }}
                     >
                       {pr.current}/{pr.target}
                     </span>

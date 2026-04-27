@@ -207,16 +207,23 @@ export function DisciplineStrip() {
               : `${Math.round(xp.percentage)}% to next`}
           </span>
           {isFasting && stage ? (
-            <span
-              className="flex items-center gap-1 text-[9px] font-mono"
-              style={{ color: "var(--ember)" }}
-            >
-              <Sparkles size={9} />
-              <span className="tabular-nums">+{liveXp}</span>
-              <span style={{ color: "var(--ink-3)" }}>this fast</span>
+            // "+183 this fast · 12 xp/h" — explicit dot separator + spacing so the
+            // two facts (earned-this-fast and current rate) read as distinct chunks
+            // (audit #17). Tabular-nums on both numbers for stable widths.
+            <span className="flex items-center gap-1.5 text-[9px] font-mono">
+              <Sparkles size={9} style={{ color: "var(--ember)" }} />
+              <span className="tabular-nums" style={{ color: "var(--ember)", fontWeight: 600 }}>
+                +{liveXp}
+              </span>
+              <span className="label-cap text-[7.5px]" style={{ color: "var(--ink-3)", letterSpacing: "0.16em" }}>
+                this fast
+              </span>
               <span style={{ color: "var(--ink-4)" }}>·</span>
-              <span style={{ color: "var(--ink-3)" }} className="tabular-nums">
-                {xpRate.toFixed(0)} xp/h
+              <span className="tabular-nums" style={{ color: "var(--ink-2)", fontWeight: 600 }}>
+                {xpRate.toFixed(0)}
+              </span>
+              <span className="label-cap text-[7.5px]" style={{ color: "var(--ink-3)", letterSpacing: "0.16em" }}>
+                xp/h
               </span>
             </span>
           ) : (
@@ -255,13 +262,16 @@ export function DisciplineStrip() {
               >
                 {d.weekdayLabel}
               </span>
-              <div className="relative flex items-center justify-center" style={{ width: 14, height: 14 }}>
+              {/* Bumped from 14 to 18 px and dot diameter from 9 to 11 px. The
+                  weekly band was previously cramped (audit #14); larger marks
+                  make today legible at a glance. */}
+              <div className="relative flex items-center justify-center" style={{ width: 18, height: 18 }}>
                 {d.isToday && (
                   <div
                     className="absolute inset-0 rounded-full"
                     style={{
-                      border: "1px solid var(--ember)",
-                      boxShadow: "0 0 4px var(--ember-glow)",
+                      border: "1.5px solid var(--ember)",
+                      boxShadow: "0 0 6px var(--ember-glow)",
                     }}
                     aria-hidden
                   />
@@ -269,8 +279,8 @@ export function DisciplineStrip() {
                 <div
                   className="rounded-full"
                   style={{
-                    width: d.hadFast ? 9 : 4,
-                    height: d.hadFast ? 9 : 4,
+                    width: d.hadFast ? 11 : 5,
+                    height: d.hadFast ? 11 : 5,
                     background: d.hadFast ? "var(--ember)" : "var(--ink-4)",
                     boxShadow: d.hadFast
                       ? "0 0 6px var(--ember-glow), 0 0 1px rgba(0,0,0,0.4)"

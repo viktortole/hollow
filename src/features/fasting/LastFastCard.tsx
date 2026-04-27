@@ -19,7 +19,12 @@ export function LastFastCard() {
   const completedFasts = useStore((s) => s.completedFasts);
 
   if (isFasting || completedFasts.length === 0) return null;
-  const lastFast = completedFasts[0];
+
+  // Skip "ended-immediately" mistakes (under 1 minute). Showing "0m +10 XP" for
+  // an accidental tap-Start-then-End looks like it's rewarding the user for
+  // doing nothing (audit #20). Walk back to find the most recent REAL fast.
+  const lastFast = completedFasts.find((f) => f.elapsedSeconds >= 60);
+  if (!lastFast) return null;
 
   return (
     <motion.div
