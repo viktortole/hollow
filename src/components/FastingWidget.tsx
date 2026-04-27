@@ -123,7 +123,7 @@ export function FastingWidget() {
           reached: isFasting && hoursElapsed >= s.hoursMin,
           isActive: i === currentStageIdx,
           color: s.color,
-          icon: Icon ? <Icon size={11} /> : null,
+          icon: Icon ? <Icon size={12} /> : null,
           label: `${s.name} at ${s.hoursMin}h`,
         };
       }),

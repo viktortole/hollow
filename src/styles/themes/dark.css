@@ -17,12 +17,14 @@
  */
 
 [data-theme="dark"] {
-  /* SURFACES — stratified warm graphite */
-  --bg-0: #0d0a08;                           /* outermost; widget chrome */
-  --bg-1: #16110d;                           /* interior — slight lift */
-  --bg-2: #1f1813;                           /* cards — clearly elevated */
-  --bg-3: #2a211a;                           /* hover/selected */
-  --hairline: rgba(243, 234, 219, 0.07);     /* dividers, edges */
+  /* SURFACES — stratified warm graphite, slightly warmer + more contrast.
+     Earlier values were near-monochrome and made stage colors read bleached.
+     bg-1 → bg-2 contrast bumped so cards lift more clearly. */
+  --bg-0: #0e0a07;                           /* outermost; widget chrome */
+  --bg-1: #1a140e;                           /* interior — slight lift */
+  --bg-2: #25201b;                           /* cards — clearly elevated, warmer */
+  --bg-3: #322a22;                           /* hover/selected */
+  --hairline: rgba(243, 234, 219, 0.09);     /* dividers, edges */
 
   /* INK — warm cream typography. Tuned for contrast on bg-2 (#1f1813). */
   --ink:   #f3eadb;
@@ -30,24 +32,25 @@
   --ink-3: rgba(243, 234, 219, 0.55);
   --ink-4: rgba(243, 234, 219, 0.22);
 
-  /* ACCENT — burnt copper-amber. More saturated than light-theme so it punches
-     against the warm-graphite without becoming neon. */
-  --ember:      #e08456;
-  --ember-soft: rgba(224, 132, 86, 0.16);
-  --ember-glow: rgba(224, 132, 86, 0.50);
+  /* ACCENT — burnt copper-amber, punched up so it pops against warm graphite
+     without crossing into neon territory. */
+  --ember:      #ee9162;                     /* +brighter, less muddy */
+  --ember-soft: rgba(238, 145, 98, 0.18);
+  --ember-glow: rgba(238, 145, 98, 0.55);
 
-  /* SEMANTIC — desaturated earth tones with one push toward electric-water. */
-  --water:   #7ab1d4;
-  --water-soft: rgba(122, 177, 212, 0.18);
-  --water-glow: rgba(122, 177, 212, 0.48);
-  --success: #88ad79;
-  --success-soft: rgba(136, 173, 121, 0.18);
-  --success-glow: rgba(136, 173, 121, 0.48);
-  --danger:  #d96651;
-  --danger-soft: rgba(217, 102, 81, 0.14);
-  --gold:    #d4ae5e;                        /* brass — used only on goal moments */
-  --gold-soft: rgba(212, 174, 94, 0.18);
-  --gold-glow: rgba(212, 174, 94, 0.42);
+  /* SEMANTIC — slightly more saturation across the board so colors read
+     "intentional" instead of "bleached" on dark. */
+  --water:   #8cc1e0;
+  --water-soft: rgba(140, 193, 224, 0.20);
+  --water-glow: rgba(140, 193, 224, 0.50);
+  --success: #95bf83;
+  --success-soft: rgba(149, 191, 131, 0.20);
+  --success-glow: rgba(149, 191, 131, 0.50);
+  --danger:  #e57258;
+  --danger-soft: rgba(229, 114, 88, 0.16);
+  --gold:    #e6bf52;                        /* richer brass for goal moments */
+  --gold-soft: rgba(230, 191, 82, 0.20);
+  --gold-glow: rgba(230, 191, 82, 0.50);
 
   /* SHADOWS — dark needs both inner highlight (lifted feel) and outer drop. */
   --shadow-sm:    0 1px 0 rgba(243, 234, 219, 0.04) inset;

@@ -2,21 +2,21 @@ import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 
 /**
- * A single mark on the ring perimeter — a stage threshold tick.
+ * A single mark on the ring perimeter — a stage threshold milestone.
  *
- * Marks are rendered as short radial line-segments crossing the ring track.
- * Reached marks fill in their stage color. The active stage's mark gets a
- * glowing dot anchored on the outside.
+ * Marks render as **filled circle stage-icon plates** anchored at hour-position
+ * angles around the ring (BodyFast / Window / Zero pattern). Reached marks
+ * fill in their stage color with a white icon; unreached marks read as a
+ * subtle ink-outlined hollow circle that previews "what's coming".
  *
- * Icons are deliberately NOT on the ring — they live in the StageIndicator
- * card below the ring so the ring stays a precise instrument.
+ * The ring stays a precision instrument — these are punctuation, not chrome.
  */
 export interface RingMark {
   atProgress: number;
   reached: boolean;
   isActive: boolean;
   color: string;
-  /** Kept for API compatibility; not rendered on the ring itself. */
+  /** Optional icon — rendered inside the filled circle when reached. */
   icon?: ReactNode;
   label?: string;
 }
@@ -35,23 +35,22 @@ interface CircularProgressProps {
   color?: string;
   glowColor?: string;
   marks?: RingMark[];
-  /** Kept for API compatibility; the new mark design is fixed-width ticks. */
+  /** Diameter of each mark plate in pixels. Default 22. */
   markSize?: number;
   children?: ReactNode;
 }
 
 /**
- * Circular progress ring with optional perimeter tick-marks + optional
- * second-pass "overtime" arc.
+ * Circular progress ring with optional perimeter stage-mark plates +
+ * optional second-pass "overtime" arc.
  *
  * Stack order from back to front:
  *   1. Track (full circle, ink-4)
  *   2. Soft tip wash (blur halo at the leading edge of the primary arc)
  *   3. Primary arc (stage color, blur-filtered glow)
  *   4. Overtime arc (gold by default — visible only when goal exceeded)
- *   5. Stage tick-marks crossing the track (drawn LAST so the arc + glow
- *      can't mask them when at 100%)
- *   6. Active stage's outside dot
+ *   5. Stage mark plates (filled circles with icons, drawn LAST so they're
+ *      always legible — the arc + glow can't bury them)
  */
 export function CircularProgress({
   progress,
@@ -62,6 +61,7 @@ export function CircularProgress({
   color = "#b85a3b",
   glowColor = "#b85a3b80",
   marks,
+  markSize = 22,
   children,
 }: CircularProgressProps) {
   const radius = (size - strokeWidth) / 2;
@@ -71,12 +71,8 @@ export function CircularProgress({
   const overtime = Math.min(overtimeProgress, 100);
   const overtimeOffset = circumference - (overtime / 100) * circumference;
   const center = size / 2;
-  const tickInner = radius - strokeWidth / 2 - 2;
-  const tickOuter = radius + strokeWidth / 2 + 2;
-  const dotRadius = radius + strokeWidth / 2 + 5;
-
   const filterId = `glow-${color.replace("#", "")}`;
-  const tipId = `tip-${color.replace("#", "")}`;
+  void glowColor; // kept for back-compat with consumers passing it
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
@@ -88,9 +84,6 @@ export function CircularProgress({
               <feMergeNode in="b" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
-          </filter>
-          <filter id={tipId} x="-100%" y="-100%" width="300%" height="300%">
-            <feGaussianBlur stdDeviation="3" />
           </filter>
         </defs>
 
@@ -141,10 +134,7 @@ export function CircularProgress({
             filter={`url(#${filterId})`}
           />
 
-          {/* Overtime arc — drawn ON TOP in gold, only when goal exceeded.
-              Slightly thinner so the underlying primary arc still reads as the
-              full ring underneath, while the gold makes it clear we're in
-              "past your goal" territory. */}
+          {/* Overtime arc — drawn ON TOP in gold once the primary fills. */}
           {overtime > 0 && (
             <motion.circle
               cx={center}
@@ -162,76 +152,69 @@ export function CircularProgress({
             />
           )}
         </g>
-
-        {/* Stage marks — short radial ticks crossing the track. Drawn AFTER
-            the rotated group so the 10px arc + glow filter can't bury them
-            when progress is at 100% (which the screenshot bug surfaced). */}
-        {marks?.map((mark, i) => {
-          const theta = mark.atProgress * Math.PI * 2 - Math.PI / 2;
-          const cosT = Math.cos(theta);
-          const sinT = Math.sin(theta);
-          const x1 = center + tickInner * cosT;
-          const y1 = center + tickInner * sinT;
-          const x2 = center + tickOuter * cosT;
-          const y2 = center + tickOuter * sinT;
-          const dotX = center + dotRadius * cosT;
-          const dotY = center + dotRadius * sinT;
-
-          // Reached marks: stage color at full strength + thicker stroke so
-          // they read on top of the arc. Unreached: dim ink-3 against the track.
-          const tickColor = mark.reached ? mark.color : "var(--ink-3)";
-          const tickOpacity = mark.reached ? 1 : 0.7;
-          const tickWidth = mark.reached ? 3 : 2;
-
-          return (
-            <g key={`mark-${i}`} aria-label={mark.label}>
-              {/* Tiny background "punch" in track color so the tick reads as
-                  a clean notch even when sitting on top of the arc. */}
-              <line
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="var(--bg-1)"
-                strokeWidth={tickWidth + 2.5}
-                strokeLinecap="butt"
-                opacity={0.92}
-              />
-              <line
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke={tickColor}
-                strokeWidth={tickWidth}
-                strokeLinecap="round"
-                opacity={tickOpacity}
-              />
-              {mark.isActive && (
-                <>
-                  <circle
-                    cx={dotX}
-                    cy={dotY}
-                    r={5}
-                    fill={mark.color}
-                    opacity={0.4}
-                    style={{ filter: "blur(3px)" }}
-                  />
-                  <motion.circle
-                    cx={dotX}
-                    cy={dotY}
-                    r={2.8}
-                    fill={mark.color}
-                    animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
-                    transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-                    style={{ transformOrigin: `${dotX}px ${dotY}px` }}
-                  />
-                </>
-              )}
-            </g>
-          );
-        })}
       </svg>
+
+      {/* Stage mark plates — rendered as HTML overlays so the icons can be
+          React components, not embedded SVG paths. Positioned via absolute +
+          transform so they sit directly on the ring perimeter. */}
+      {marks?.map((mark, i) => {
+        // Math.round to integer pixels — fractional positions blur on Windows
+        // fractional DPI. Documented in DESIGN-SYSTEM.md "accepted artifacts".
+        const theta = mark.atProgress * Math.PI * 2 - Math.PI / 2;
+        const cx = Math.round(center + radius * Math.cos(theta));
+        const cy = Math.round(center + radius * Math.sin(theta));
+
+        const reached = mark.reached;
+        return (
+          <div
+            key={`mark-${i}`}
+            className="absolute pointer-events-none"
+            style={{
+              left: cx - markSize / 2,
+              top: cy - markSize / 2,
+              width: markSize,
+              height: markSize,
+            }}
+            aria-label={mark.label}
+          >
+            {/* Active-stage halo — soft glow ring behind the plate */}
+            {mark.isActive && (
+              <motion.div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: mark.color,
+                  filter: "blur(6px)",
+                  opacity: 0.7,
+                }}
+                animate={{ scale: [1, 1.25, 1], opacity: [0.55, 0.85, 0.55] }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                aria-hidden
+              />
+            )}
+            {/* The mark plate itself — filled circle with the stage icon
+                inside. Reached: full stage color + bg-0 icon. Unreached:
+                bg-1 fill + ink-3 hairline outline + ink-4 icon (preview). */}
+            <div
+              className="relative rounded-full flex items-center justify-center"
+              style={{
+                width: markSize,
+                height: markSize,
+                background: reached ? mark.color : "var(--bg-1)",
+                border: reached
+                  ? `1.5px solid ${mark.color}`
+                  : "1.5px solid var(--ink-4)",
+                color: reached ? "var(--bg-0)" : "var(--ink-3)",
+                boxShadow: reached
+                  ? `0 2px 6px ${mark.color}40, 0 0 0 2px var(--bg-1)`
+                  : "0 0 0 2px var(--bg-1)",
+                transition: "background 0.3s, border 0.3s, color 0.3s",
+              }}
+            >
+              {mark.icon}
+            </div>
+          </div>
+        );
+      })}
 
       {/* Center content */}
       <div className="absolute inset-0 flex items-center justify-center">

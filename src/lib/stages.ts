@@ -10,16 +10,18 @@ export interface FastingStage {
 }
 
 export const STAGES: FastingStage[] = [
-  // Earth-tone palette — desaturated, cohesive. No neon, no AI-purple.
-  // Each stage is recognizably distinct but reads as part of the same publication.
+  // Earthy-but-punchy palette. Each stage stays inside an "editorial" register
+  // (no neon, no AI-purple) but with enough saturation to read clearly on
+  // BOTH cream-paper light mode AND warm-graphite dark mode. Earlier
+  // iterations went too desaturated and looked bleached on dark.
   {
     id: "fed",
     name: "Fed",
     description: "Digesting",
     hoursMin: 0,
     hoursMax: 4,
-    color: "#7a9b6e",          // sage
-    glowColor: "#7a9b6e80",
+    color: "#88b27e",          // sage — bumped saturation
+    glowColor: "#88b27e80",
     xpMultiplier: 1,
   },
   {
@@ -28,8 +30,8 @@ export const STAGES: FastingStage[] = [
     description: "Glycogen depleting",
     hoursMin: 4,
     hoursMax: 12,
-    color: "#6b8eaa",          // dusty steel blue
-    glowColor: "#6b8eaa80",
+    color: "#5a9fd0",          // steel blue — more saturated, holds up on dark
+    glowColor: "#5a9fd080",
     xpMultiplier: 1.2,
   },
   {
@@ -38,8 +40,8 @@ export const STAGES: FastingStage[] = [
     description: "Ketosis kicking in",
     hoursMin: 12,
     hoursMax: 16,
-    color: "#d97757",          // ember (matches the brand accent)
-    glowColor: "#d9775780",
+    color: "#e8825d",          // ember — slightly warmer/brighter
+    glowColor: "#e8825d80",
     xpMultiplier: 1.5,
   },
   {
@@ -48,8 +50,8 @@ export const STAGES: FastingStage[] = [
     description: "Cellular cleanup",
     hoursMin: 16,
     hoursMax: 24,
-    color: "#4a7a7a",          // deep teal
-    glowColor: "#4a7a7a80",
+    color: "#3da7a7",          // teal — pulled out of the murky range
+    glowColor: "#3da7a780",
     xpMultiplier: 2,
   },
   {
@@ -58,8 +60,8 @@ export const STAGES: FastingStage[] = [
     description: "Hormone surge",
     hoursMin: 24,
     hoursMax: 48,
-    color: "#a05060",          // dusty crimson
-    glowColor: "#a0506080",
+    color: "#c84d6e",          // rose — sharper crimson, reads "potent"
+    glowColor: "#c84d6e80",
     xpMultiplier: 2.5,
   },
   {
@@ -68,8 +70,8 @@ export const STAGES: FastingStage[] = [
     description: "Mythic territory",
     hoursMin: 48,
     hoursMax: Infinity,
-    color: "#c9a961",          // antique gold
-    glowColor: "#c9a96180",
+    color: "#e6bf52",          // gold — richer, less antique
+    glowColor: "#e6bf5280",
     xpMultiplier: 3,
   },
 ];
