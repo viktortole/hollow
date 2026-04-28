@@ -33,3 +33,6 @@ yarn-error.log*
 # Local screenshots and scratch
 screenshots/
 scratch/
+
+# But the marketing website bundles its own screenshots for the static build
+!website/public/screenshots/
