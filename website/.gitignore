@@ -1,0 +1,24 @@
+# Build output — Vercel generates this
+out/
+
+# Next.js build cache
+.next/
+
+# Dependencies
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

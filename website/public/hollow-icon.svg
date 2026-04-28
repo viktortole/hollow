@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!--
+    Hollow brand mark.
+    Three concentric circles in burnt amber (ember #b85a3b) on charcoal,
+    with a cream "punch" at the center. Mirrors the onboarding splash icon
+    at marketing scale. Plain SVG so any rasterizer works.
+  -->
+
+  <!-- Background tile (rounded square so it adapts well to mobile launchers). -->
+  <rect x="0" y="0" width="1024" height="1024" rx="220" ry="220" fill="#1f1c18"/>
+
+  <!-- Concentric ember rings, decreasing opacity outward. -->
+  <circle cx="512" cy="512" r="420" fill="none" stroke="#b85a3b" stroke-width="22" stroke-opacity="0.30"/>
+  <circle cx="512" cy="512" r="290" fill="none" stroke="#b85a3b" stroke-width="22" stroke-opacity="0.55"/>
+
+  <!-- Solid ember core. -->
+  <circle cx="512" cy="512" r="170" fill="#b85a3b" fill-opacity="0.92"/>
+
+  <!-- Cream punch at center (the "hollow" in HOLLOW). -->
+  <circle cx="512" cy="512" r="62" fill="#f3efe7"/>
+</svg>

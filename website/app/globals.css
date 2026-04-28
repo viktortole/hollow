@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Hollow Design Tokens — Dark Theme
+   Matches src/styles/themes/dark.css from the app.
+   ============================================================ */
+
+@theme inline {
+  /* Surfaces — warm graphite */
+  --color-bg-0: #0e0a07;
+  --color-bg-1: #1a140e;
+  --color-bg-2: #25201b;
+  --color-bg-3: #322a22;
+
+  /* Ink — warm cream */
+  --color-ink: #f3eadb;
+  --color-ink-2: rgba(243, 234, 219, 0.78);
+  --color-ink-3: rgba(243, 234, 219, 0.55);
+  --color-ink-4: rgba(243, 234, 219, 0.22);
+
+  /* Accent — burnt copper-amber */
+  --color-ember: #ee9162;
+  --color-ember-soft: rgba(238, 145, 98, 0.18);
+
+  /* Semantic */
+  --color-water: #8cc1e0;
+  --color-success: #95bf83;
+  --color-danger: #e57258;
+  --color-gold: #e6bf52;
+
+  /* Hairline */
+  --color-hairline: rgba(243, 234, 219, 0.09);
+
+  /* Typography */
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Geometry */
+  --radius-card: 3px;
+  --radius-pill: 3px;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #0e0a07;
+  color: #f3eadb;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   Custom scrollbar — matches warm graphite theme
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0e0a07;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #322a22;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3d3228;
+}
+
+/* ============================================================
+   Selection — ember accent
+   ============================================================ */
+
+::selection {
+  background: rgba(238, 145, 98, 0.3);
+  color: #f3eadb;
+}
+
+/* ============================================================
+   Focus visible — ember ring for keyboard nav
+   ============================================================ */
+
+:focus-visible {
+  outline: 2px solid #ee9162;
+  outline-offset: 2px;
+}
